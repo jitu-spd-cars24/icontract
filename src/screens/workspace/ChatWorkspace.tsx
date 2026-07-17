@@ -4,7 +4,7 @@ import { Logo, MerlinMark, RiskDot, ClauseStatusBadge } from "@/components/share
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { ApprovalModal } from "./ApprovalModal";
-import { CONTRACT, RECENT_CONTRACTS } from "@/lib/data";
+import { CONTRACT, RECENT_CONTRACTS, INSIGHTS } from "@/lib/data";
 import {
   Plus,
   Send,
@@ -39,6 +39,54 @@ interface Msg {
 let seq = 0;
 const uid = () => `m${++seq}`;
 
+/* Guided intake — the questions Merlin walks through to create a contract.
+   `apply` fills artifact metadata for the canonical (first) answer. */
+interface IntakeQ {
+  id: string;
+  ask: string;
+  ack: string;
+  chips: string[];
+  apply: { id: string; value: string }[];
+}
+const INTAKE: IntakeQ[] = [
+  {
+    id: "kind",
+    ask: "What kind of agreement are you creating?",
+    ack: "A Purchase Agreement — good choice, it exercises almost every clause type.",
+    chips: ["Purchase Agreement", "NDA", "Master Services Agreement", "Service Agreement"],
+    apply: [{ id: "contractType", value: "Procurement / Purchase Agreement" }],
+  },
+  {
+    id: "supplier",
+    ask: "Who's the supplier or counterparty?",
+    ack: "Got it — I found ABC Manufacturing in your supplier master (2 prior contracts).",
+    chips: ["ABC Manufacturing Pvt. Ltd.", "Cloudspring Technologies", "Someone else"],
+    apply: [{ id: "supplierName", value: "ABC Manufacturing Pvt. Ltd." }, { id: "supplierId", value: "SUP-004471" }],
+  },
+  {
+    id: "value",
+    ask: "Rough contract value and region?",
+    ack: "Noted — ₹2 Cr, India, Manufacturing.",
+    chips: ["₹2 Cr · India", "₹85 L · India", "Not sure yet"],
+    apply: [{ id: "value", value: "₹2.00 Cr" }, { id: "region", value: "India" }, { id: "businessUnit", value: "Manufacturing" }],
+  },
+  {
+    id: "dates",
+    ask: "Effective date and duration?",
+    ack: "Set — 01 Aug 2026, running three years.",
+    chips: ["01 Aug 2026 · 3 years", "Today · 1 year", "Decide later"],
+    apply: [{ id: "effectiveDate", value: "01 Aug 2026" }, { id: "term", value: "3 years" }, { id: "endDate", value: "31 Jul 2029" }],
+  },
+  {
+    id: "protect",
+    ask: "Any special protections this deal needs?",
+    ack: "I'll make sure insurance and a data-privacy (DPA) clause are required.",
+    chips: ["Insurance + Data privacy", "Standard terms only"],
+    apply: [{ id: "insurance", value: "Yes" }, { id: "dataPrivacy", value: "Required" }],
+  },
+];
+const SKIP_RE = /not sure|later|someone else|standard terms only|decide|skip/i;
+
 export function ChatWorkspace() {
   const store = useStore();
   const {
@@ -46,10 +94,12 @@ export function ChatWorkspace() {
     theme,
     toggleTheme,
     isBlank,
-    clauses,
+    intakeMode,
     insights,
     resolveInsight,
     insertMissingClause,
+    updateField,
+    generateFromIntake,
   } = store;
   const health = useHealth();
 
@@ -58,45 +108,38 @@ export function ChatWorkspace() {
   const [typing, setTyping] = React.useState(false);
   const [artifactOpen, setArtifactOpen] = React.useState(true);
   const [showApproval, setShowApproval] = React.useState(false);
+  const [phase, setPhase] = React.useState<"intake" | "ready" | "authoring">(
+    intakeMode ? "intake" : "authoring"
+  );
+  const [step, setStep] = React.useState(0);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  // Proactive opening — Merlin greets and reports findings
-  React.useEffect(() => {
+  function findingCards(): Card[] {
     const openRisks = insights.filter((i) => !i.resolved && i.type === "risk");
     const openMissing = insights.filter((i) => !i.resolved && i.type === "missing");
-    const intro: Msg[] = [
-      {
-        id: uid(),
-        role: "merlin",
-        text: isBlank
-          ? "Hi Jitendra — blank canvas. Tell me what you're drafting and I'll scaffold it, or ask me anything. The contract shows up as an artifact on the right as we go."
-          : `Hi Jitendra — I've read the ${CONTRACT.type} for ${CONTRACT.supplier}. The full contract is the artifact on the right. Here's what I'd look at first.`,
-      },
+    return [
+      ...openRisks.map((i) => ({ kind: "risk" as const, refId: i.id, title: i.title, detail: i.detail, basis: i.basis, confidence: i.confidence })),
+      ...openMissing.map((i) => ({ kind: "missing" as const, refId: i.id === "i4" ? "m1" : "m2", title: i.title.replace("Missing clause — ", ""), detail: i.detail, basis: i.basis, confidence: i.confidence })),
     ];
-    if (!isBlank && (openRisks.length || openMissing.length)) {
-      intro.push({
-        id: uid(),
-        role: "merlin",
-        text: `I found ${openRisks.length} risk${openRisks.length !== 1 ? "s" : ""} and ${openMissing.length} missing clause${openMissing.length !== 1 ? "s" : ""}. You can act on any of these right here — I'll update the artifact.`,
-        cards: [
-          ...openRisks.map((i) => ({
-            kind: "risk" as const,
-            refId: i.id,
-            title: i.title,
-            detail: i.detail,
-            basis: i.basis,
-            confidence: i.confidence,
-          })),
-          ...openMissing.map((i) => ({
-            kind: "missing" as const,
-            refId: i.id === "i4" ? "m1" : "m2",
-            title: i.title.replace("Missing clause — ", ""),
-            detail: i.detail,
-            basis: i.basis,
-            confidence: i.confidence,
-          })),
-        ],
-      });
+  }
+
+  // Opening — a guided intake, or a proactive review of an existing draft
+  React.useEffect(() => {
+    if (intakeMode) {
+      setMessages([
+        { id: uid(), role: "merlin", text: "Hi Jitendra — let's create this contract together. I'll ask a few quick questions, fill the details into the artifact on the right, then draft the whole thing. No forms." },
+        { id: uid(), role: "merlin", text: INTAKE[0].ask },
+      ]);
+      return;
+    }
+    const cards = findingCards();
+    const intro: Msg[] = [
+      { id: uid(), role: "merlin", text: isBlank
+          ? "Hi Jitendra — blank canvas. Tell me what you're drafting and I'll scaffold it. The contract shows up as an artifact on the right."
+          : `Hi Jitendra — I've read the ${CONTRACT.type} for ${CONTRACT.supplier}. The full contract is the artifact on the right. Here's what I'd look at first.` },
+    ];
+    if (cards.length) {
+      intro.push({ id: uid(), role: "merlin", text: `I found ${cards.filter((c) => c.kind === "risk").length} risks and ${cards.filter((c) => c.kind === "missing").length} missing clauses. Act on any of these right here — I'll update the artifact.`, cards });
     }
     setMessages(intro);
     // eslint-disable-next-line
@@ -187,17 +230,66 @@ export function ChatWorkspace() {
     return merlinReply(`I can act on this contract directly. Try: “fix the payment terms”, “add the missing clauses”, “summarise the risks”, or “am I ready to submit?” — and I'll update the artifact on the right.`);
   }
 
+  // ---- Guided intake ----
+  function handleIntakeAnswer(text: string) {
+    const q = INTAKE[step];
+    if (!q) return;
+    if (!SKIP_RE.test(text)) q.apply.forEach((a) => updateField(a.id, a.value));
+    const next = step + 1;
+    setStep(next);
+    if (next < INTAKE.length) {
+      const ack = SKIP_RE.test(text) ? "No problem — I'll leave that for later." : q.ack;
+      merlinReply(`${ack} ${INTAKE[next].ask}`);
+    } else {
+      setPhase("ready");
+      merlinReply(
+        `${SKIP_RE.test(text) ? "Noted." : q.ack} That's enough for a strong first draft — I'll pick the right India template, inject these details, assemble clauses, and run a policy check. Ready?`
+      );
+    }
+  }
+
+  function doGenerate() {
+    setTyping(true);
+    window.setTimeout(() => {
+      generateFromIntake();
+      setTyping(false);
+      setPhase("authoring");
+      const cards = INSIGHTS.filter((i) => i.type === "risk" || i.type === "missing").map((i) =>
+        i.type === "risk"
+          ? { kind: "risk" as const, refId: i.id, title: i.title, detail: i.detail, basis: i.basis, confidence: i.confidence }
+          : { kind: "missing" as const, refId: i.id === "i4" ? "m1" : "m2", title: i.title.replace("Missing clause — ", ""), detail: i.detail, basis: i.basis, confidence: i.confidence }
+      );
+      push({ id: uid(), role: "merlin", text: "Done — I generated your Purchase Agreement from the Supplier Agreement (India, FY26) template, injected the details, and ran it against policy. The full contract is on the right. Three things need a decision:", cards });
+    }, 1200);
+  }
+
   function send(text: string) {
     const v = text.trim();
     if (!v) return;
     push({ id: uid(), role: "user", text: v });
     setDraft("");
+    if (phase === "ready" && /generate|draft|yes|go ahead|do it/i.test(v)) return doGenerate();
+    if (phase === "intake") return handleIntakeAnswer(v);
     process(v);
   }
 
-  const suggestions = isBlank
-    ? ["Scaffold a Purchase Agreement", "Add a payment terms clause", "What should I include?"]
-    : ["Fix the payment terms", "Add the missing clauses", "Summarise the risks", "Am I ready to submit?"];
+  // Dynamic chips — "what to do next" for the current stage
+  const openRisks = insights.filter((i) => !i.resolved && i.type === "risk");
+  const openMissing = insights.filter((i) => !i.resolved && i.type === "missing");
+  let suggestions: string[] = [];
+  if (phase === "intake") {
+    suggestions = INTAKE[step]?.chips ?? [];
+  } else if (phase === "ready") {
+    suggestions = ["⚡ Generate the draft", "Add another requirement"];
+  } else {
+    const s: string[] = [];
+    if (openRisks.some((i) => i.clauseId === "c4")) s.push("Fix the payment terms");
+    if (openMissing.length) s.push("Add the missing clauses");
+    if (openRisks.length > 1) s.push("Fix everything");
+    s.push("Summarise the risks");
+    s.push(health.ready ? "Submit for approval" : "Am I ready to submit?");
+    suggestions = s.slice(0, 4);
+  }
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">

@@ -37,9 +37,12 @@ interface Store {
   theme: "light" | "dark";
   toggleTheme: () => void;
   isBlank: boolean;
+  intakeMode: boolean;
   duplicatedFrom: string | null;
   startDraft: (opts?: { duplicatedFrom?: string }) => void;
   startBlank: () => void;
+  startMerlinIntake: () => void;
+  generateFromIntake: () => void;
 
   clauses: Clause[];
   metadata: MetadataField[];
@@ -125,6 +128,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [merlinTab, setMerlinTab] = React.useState("insights");
   const [toasts, setToasts] = React.useState<Toast[]>([]);
   const [isBlank, setIsBlank] = React.useState(false);
+  const [intakeMode, setIntakeMode] = React.useState(false);
   const [duplicatedFrom, setDuplicatedFrom] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -304,6 +308,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setComments(COMMENTS);
       setActivity(ACTIVITY);
       setIsBlank(false);
+      setIntakeMode(false);
       setDuplicatedFrom(opts?.duplicatedFrom ?? null);
       setSelectedClauseId(null);
       setEditingClauseId(null);
@@ -312,6 +317,35 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     },
     []
   );
+
+  const startMerlinIntake = React.useCallback(() => {
+    setClauses([]);
+    setMetadata(BLANK_METADATA);
+    setInsights([]);
+    setComments([]);
+    setActivity([
+      { id: "e_intake", actor: "Jitendra Kumar", action: "started a Merlin intake", timestamp: "Just now", kind: "system" },
+    ]);
+    setIsBlank(true);
+    setIntakeMode(true);
+    setDuplicatedFrom(null);
+    setSelectedClauseId(null);
+    setEditingClauseId(null);
+    setMerlinTab("insights");
+    setStep("workspace");
+  }, []);
+
+  const generateFromIntake = React.useCallback(() => {
+    setClauses(CLAUSES);
+    setMetadata(METADATA);
+    setInsights(INSIGHTS);
+    setComments(COMMENTS);
+    setActivity(ACTIVITY);
+    setIsBlank(false);
+    setIntakeMode(false);
+    setSelectedClauseId(null);
+    setEditingClauseId(null);
+  }, []);
 
   const startBlank = React.useCallback(() => {
     setClauses([]);
@@ -328,6 +362,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       },
     ]);
     setIsBlank(true);
+    setIntakeMode(false);
     setDuplicatedFrom(null);
     setSelectedClauseId(null);
     setEditingClauseId(null);
@@ -512,9 +547,12 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     theme,
     toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
     isBlank,
+    intakeMode,
     duplicatedFrom,
     startDraft,
     startBlank,
+    startMerlinIntake,
+    generateFromIntake,
     clauses,
     metadata,
     insights,
