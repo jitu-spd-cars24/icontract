@@ -8,7 +8,7 @@ import { DuplicateContract } from "@/screens/DuplicateContract";
 import { MetadataReview } from "@/screens/MetadataReview";
 import { TemplateSelection } from "@/screens/TemplateSelection";
 import { GenerateDraft } from "@/screens/GenerateDraft";
-import { Workspace } from "@/screens/workspace/Workspace";
+import { ChatWorkspace } from "@/screens/workspace/ChatWorkspace";
 
 function Router() {
   const { step } = useStore();
@@ -30,7 +30,7 @@ function Router() {
     case "generating":
       return <GenerateDraft />;
     case "workspace":
-      return <Workspace />;
+      return <ChatWorkspace />;
     default:
       return <Dashboard />;
   }
