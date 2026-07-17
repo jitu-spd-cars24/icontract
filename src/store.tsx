@@ -38,6 +38,7 @@ interface Store {
   toggleTheme: () => void;
   isBlank: boolean;
   intakeMode: boolean;
+  workspaceMode: "chat" | "document";
   duplicatedFrom: string | null;
   startDraft: (opts?: { duplicatedFrom?: string }) => void;
   startBlank: () => void;
@@ -129,6 +130,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = React.useState<Toast[]>([]);
   const [isBlank, setIsBlank] = React.useState(false);
   const [intakeMode, setIntakeMode] = React.useState(false);
+  const [workspaceMode, setWorkspaceMode] = React.useState<"chat" | "document">("chat");
   const [duplicatedFrom, setDuplicatedFrom] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -309,6 +311,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setActivity(ACTIVITY);
       setIsBlank(false);
       setIntakeMode(false);
+      setWorkspaceMode("chat");
       setDuplicatedFrom(opts?.duplicatedFrom ?? null);
       setSelectedClauseId(null);
       setEditingClauseId(null);
@@ -328,6 +331,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     ]);
     setIsBlank(true);
     setIntakeMode(true);
+    setWorkspaceMode("chat");
     setDuplicatedFrom(null);
     setSelectedClauseId(null);
     setEditingClauseId(null);
@@ -343,6 +347,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setActivity(ACTIVITY);
     setIsBlank(false);
     setIntakeMode(false);
+    setWorkspaceMode("chat");
     setSelectedClauseId(null);
     setEditingClauseId(null);
   }, []);
@@ -363,6 +368,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     ]);
     setIsBlank(true);
     setIntakeMode(false);
+    setWorkspaceMode("document");
     setDuplicatedFrom(null);
     setSelectedClauseId(null);
     setEditingClauseId(null);
@@ -548,6 +554,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
     isBlank,
     intakeMode,
+    workspaceMode,
     duplicatedFrom,
     startDraft,
     startBlank,

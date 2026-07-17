@@ -9,9 +9,10 @@ import { MetadataReview } from "@/screens/MetadataReview";
 import { TemplateSelection } from "@/screens/TemplateSelection";
 import { GenerateDraft } from "@/screens/GenerateDraft";
 import { ChatWorkspace } from "@/screens/workspace/ChatWorkspace";
+import { Workspace } from "@/screens/workspace/Workspace";
 
 function Router() {
-  const { step } = useStore();
+  const { step, workspaceMode } = useStore();
   switch (step) {
     case "dashboard":
       return <Dashboard />;
@@ -30,7 +31,7 @@ function Router() {
     case "generating":
       return <GenerateDraft />;
     case "workspace":
-      return <ChatWorkspace />;
+      return workspaceMode === "document" ? <Workspace /> : <ChatWorkspace />;
     default:
       return <Dashboard />;
   }
