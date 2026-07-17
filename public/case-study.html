@@ -1,0 +1,1169 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Redesigning Contract Authoring for Zycus iContract — UX Case Study</title>
+<meta name="description" content="An AI-assisted enterprise contract authoring experience. A 21-page UX case study.">
+</head>
+<body>
+<style>
+  /* ============================================================
+     Zycus iContract — UX Case Study
+     Editorial deck. Violet-biased neutrals, serif narrative voice,
+     Merlin violet reserved as the single accent.
+     ============================================================ */
+  :root {
+    --paper: #f6f5f9;
+    --surface: #ffffff;
+    --surface-2: #f0eef6;
+    --ink: #191622;
+    --ink-soft: #37333f;
+    --muted: #6b6675;
+    --faint: #918c9d;
+    --line: #e6e3ee;
+    --line-strong: #d7d3e2;
+    --indigo: #4a3ad9;
+    --merlin: #6d4dff;
+    --merlin-ink: #4a2fd6;
+    --merlin-soft: #efeaff;
+    --crit: #cf3f4c;
+    --crit-soft: #fbecee;
+    --warn: #b7791f;
+    --warn-soft: #fbf1de;
+    --ok: #2b9367;
+    --ok-soft: #e6f4ee;
+    --shadow: 0 1px 2px rgba(25, 22, 34, .04), 0 12px 32px -16px rgba(25, 22, 34, .18);
+    --shadow-lg: 0 24px 60px -28px rgba(40, 26, 110, .35);
+
+    --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+    --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, Consolas, monospace;
+
+    --maxw: 940px;
+    --rail: 232px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #0f0d16;
+      --surface: #17141f;
+      --surface-2: #1e1b29;
+      --ink: #f3f1f8;
+      --ink-soft: #d6d2e2;
+      --muted: #9a94a8;
+      --faint: #726c81;
+      --line: #272233;
+      --line-strong: #322c40;
+      --indigo: #9585ff;
+      --merlin: #a390ff;
+      --merlin-ink: #b6a6ff;
+      --merlin-soft: #211a37;
+      --crit: #f0757f;
+      --crit-soft: #2c1a20;
+      --warn: #e0a94b;
+      --warn-soft: #2b2214;
+      --ok: #5bc394;
+      --ok-soft: #14261e;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px -20px rgba(0,0,0,.6);
+      --shadow-lg: 0 30px 70px -30px rgba(0,0,0,.75);
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #0f0d16; --surface: #17141f; --surface-2: #1e1b29;
+    --ink: #f3f1f8; --ink-soft: #d6d2e2; --muted: #9a94a8; --faint: #726c81;
+    --line: #272233; --line-strong: #322c40;
+    --indigo: #9585ff; --merlin: #a390ff; --merlin-ink: #b6a6ff; --merlin-soft: #211a37;
+    --crit: #f0757f; --crit-soft: #2c1a20; --warn: #e0a94b; --warn-soft: #2b2214;
+    --ok: #5bc394; --ok-soft: #14261e;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 16px 40px -20px rgba(0,0,0,.6);
+    --shadow-lg: 0 30px 70px -30px rgba(0,0,0,.75);
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f5f9; --surface: #ffffff; --surface-2: #f0eef6;
+    --ink: #191622; --ink-soft: #37333f; --muted: #6b6675; --faint: #918c9d;
+    --line: #e6e3ee; --line-strong: #d7d3e2;
+    --indigo: #4a3ad9; --merlin: #6d4dff; --merlin-ink: #4a2fd6; --merlin-soft: #efeaff;
+    --crit: #cf3f4c; --crit-soft: #fbecee; --warn: #b7791f; --warn-soft: #fbf1de;
+    --ok: #2b9367; --ok-soft: #e6f4ee;
+    --shadow: 0 1px 2px rgba(25,22,34,.04), 0 12px 32px -16px rgba(25,22,34,.18);
+    --shadow-lg: 0 24px 60px -28px rgba(40,26,110,.35);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    font-size: 17px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .cs-wrap { display: flex; min-height: 100vh; }
+
+  /* ---------- Left rail ---------- */
+  .rail {
+    position: fixed; top: 0; left: 0; bottom: 0; width: var(--rail);
+    border-right: 1px solid var(--line);
+    background: color-mix(in oklab, var(--surface) 70%, transparent);
+    backdrop-filter: blur(10px);
+    padding: 26px 18px 20px;
+    display: flex; flex-direction: column; gap: 18px; z-index: 50;
+  }
+  .rail-brand { display: flex; align-items: center; gap: 10px; }
+  .rail-mark {
+    width: 30px; height: 30px; border-radius: 9px;
+    background: linear-gradient(135deg, var(--indigo), var(--merlin));
+    color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 15px;
+    box-shadow: 0 4px 14px -4px var(--merlin);
+  }
+  .rail-brand b { font-weight: 700; font-size: 14px; letter-spacing: -.01em; }
+  .rail-brand span { color: var(--muted); font-weight: 400; }
+  .rail-nav { overflow-y: auto; display: flex; flex-direction: column; gap: 1px; margin: 0 -8px; padding: 0 4px; }
+  .rail-nav::-webkit-scrollbar { width: 6px; }
+  .rail-nav::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 6px; }
+  .rail-link {
+    display: flex; gap: 10px; align-items: baseline; text-decoration: none;
+    color: var(--muted); padding: 5px 8px; border-radius: 7px; font-size: 12.5px; line-height: 1.3;
+    transition: background .15s, color .15s;
+  }
+  .rail-link:hover { background: var(--surface-2); color: var(--ink); }
+  .rail-link.active { background: var(--merlin-soft); color: var(--merlin-ink); }
+  .rail-link .n { font-family: var(--font-mono); font-size: 10.5px; color: var(--faint); min-width: 16px; }
+  .rail-link.active .n { color: var(--merlin); }
+  .rail-foot { margin-top: auto; display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+  .theme-btn {
+    border: 1px solid var(--line-strong); background: var(--surface); color: var(--ink);
+    border-radius: 8px; padding: 7px 10px; font-size: 12px; cursor: pointer; font-family: var(--font-sans);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .theme-btn:hover { border-color: var(--merlin); color: var(--merlin-ink); }
+
+  .progress-top { display: none; }
+
+  /* ---------- Pages ---------- */
+  .pages { margin-left: var(--rail); flex: 1; min-width: 0; }
+  .page {
+    max-width: calc(var(--maxw) + 120px);
+    margin: 0 auto; padding: 96px 60px; scroll-margin-top: 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .page:last-child { border-bottom: none; }
+  .inner { max-width: var(--maxw); margin: 0 auto; }
+
+  .eyebrow {
+    font-family: var(--font-mono); font-size: 11.5px; letter-spacing: .16em; text-transform: uppercase;
+    color: var(--merlin); display: flex; align-items: center; gap: 10px; margin: 0 0 22px;
+  }
+  .eyebrow::before { content: ""; width: 26px; height: 1.5px; background: var(--merlin); display: inline-block; }
+  .eyebrow .pg { color: var(--faint); margin-left: auto; }
+
+  h1.title { font-family: var(--font-display); font-weight: 600; font-size: clamp(30px, 4.4vw, 52px); line-height: 1.06; letter-spacing: -.015em; margin: 0 0 20px; text-wrap: balance; }
+  h2.title { font-family: var(--font-display); font-weight: 600; font-size: clamp(26px, 3.4vw, 40px); line-height: 1.1; letter-spacing: -.01em; margin: 0 0 18px; text-wrap: balance; }
+  .lead { font-size: clamp(18px, 1.6vw, 21px); line-height: 1.55; color: var(--ink-soft); max-width: 62ch; margin: 0 0 14px; }
+  p { max-width: 65ch; color: var(--ink-soft); }
+  .page p + p { margin-top: 1em; }
+  strong { color: var(--ink); font-weight: 650; }
+  .muted { color: var(--muted); }
+  em.q { font-family: var(--font-display); font-style: italic; color: var(--ink); }
+
+  .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin: 0 0 10px; }
+
+  /* grid helpers */
+  .grid { display: grid; gap: 18px; }
+  .g2 { grid-template-columns: repeat(2, 1fr); }
+  .g3 { grid-template-columns: repeat(3, 1fr); }
+  .g4 { grid-template-columns: repeat(4, 1fr); }
+  @media (max-width: 900px) { .g2, .g3, .g4 { grid-template-columns: 1fr; } }
+
+  /* cards */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 22px; box-shadow: var(--shadow); }
+  .card h3 { margin: 0 0 6px; font-size: 16px; font-weight: 650; letter-spacing: -.01em; }
+  .card p { font-size: 14.5px; margin: 0; color: var(--muted); }
+  .card .ico { width: 34px; height: 34px; border-radius: 9px; background: var(--merlin-soft); color: var(--merlin-ink); display: grid; place-items: center; margin-bottom: 14px; }
+  .card .ico svg { width: 18px; height: 18px; }
+
+  .card.merlin { border-color: color-mix(in oklab, var(--merlin) 40%, var(--line)); background: linear-gradient(180deg, var(--merlin-soft), var(--surface) 55%); }
+
+  /* label chips */
+  .chip { display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-mono); font-size: 11px; letter-spacing: .03em; padding: 4px 9px; border-radius: 999px; border: 1px solid var(--line-strong); color: var(--muted); background: var(--surface); }
+  .chip.crit { color: var(--crit); background: var(--crit-soft); border-color: transparent; }
+  .chip.warn { color: var(--warn); background: var(--warn-soft); border-color: transparent; }
+  .chip.ok { color: var(--ok); background: var(--ok-soft); border-color: transparent; }
+  .chip.merlin { color: var(--merlin-ink); background: var(--merlin-soft); border-color: transparent; }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  /* stat */
+  .stat { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .stat .n { font-family: var(--font-display); font-weight: 600; font-size: 40px; line-height: 1; letter-spacing: -.02em; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .stat .n .u { font-size: 18px; color: var(--muted); font-family: var(--font-sans); }
+  .stat .l { font-size: 13px; color: var(--muted); margin-top: 8px; }
+  .stat .d { font-size: 12px; color: var(--faint); margin-top: 3px; }
+
+  /* meta rows (cover) */
+  .metarow { display: grid; grid-template-columns: 120px 1fr; gap: 6px 20px; padding: 14px 0; border-top: 1px solid var(--line); align-items: start; }
+  .metarow dt { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); padding-top: 3px; }
+  .metarow dd { margin: 0; color: var(--ink); font-size: 15px; }
+
+  /* list */
+  ul.clean { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+  ul.clean li { display: flex; gap: 12px; align-items: baseline; color: var(--ink-soft); font-size: 15px; }
+  ul.clean li::before { content: ""; width: 6px; height: 6px; border-radius: 2px; background: var(--merlin); transform: translateY(-2px); flex: none; }
+  ul.clean.crit li::before { background: var(--crit); }
+
+  /* callout / pull quote */
+  .pull { font-family: var(--font-display); font-weight: 600; font-size: clamp(24px, 3vw, 36px); line-height: 1.22; letter-spacing: -.01em; color: var(--ink); border-left: 3px solid var(--merlin); padding: 6px 0 6px 26px; margin: 30px 0; max-width: 24ch; text-wrap: balance; }
+  .pull small { display: block; font-family: var(--font-mono); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 400; margin-top: 14px; }
+
+  .note { font-family: var(--font-mono); font-size: 12px; color: var(--faint); line-height: 1.6; border-top: 1px dashed var(--line-strong); padding-top: 14px; margin-top: 26px; }
+  .note b { color: var(--muted); font-weight: 600; }
+
+  /* two-col layout */
+  .split { display: grid; grid-template-columns: 1.1fr .9fr; gap: 44px; align-items: start; }
+  @media (max-width: 900px) { .split { grid-template-columns: 1fr; gap: 28px; } }
+
+  /* timeline (journey) */
+  .journey { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; margin-top: 8px; }
+  .jstep { padding: 0 10px; border-top: 2px solid var(--line-strong); position: relative; padding-top: 20px; }
+  .jstep::before { content: ""; position: absolute; top: -6px; left: 10px; width: 10px; height: 10px; border-radius: 50%; background: var(--surface); border: 2px solid var(--muted); }
+  .jstep.pain::before { border-color: var(--crit); background: var(--crit); }
+  .jstep h4 { margin: 0 0 6px; font-size: 13px; font-weight: 650; }
+  .jstep p { font-size: 12px; color: var(--muted); margin: 0 0 8px; }
+  .jstep .emo { font-family: var(--font-mono); font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; }
+  .jstep .emo.bad { color: var(--crit); }
+  .jstep .emo.mid { color: var(--warn); }
+  @media (max-width: 900px) { .journey { grid-template-columns: 1fr; } .jstep { border-top: none; border-left: 2px solid var(--line-strong); padding: 4px 0 18px 18px; } .jstep::before { left: -6px; top: 4px; } }
+
+  /* comparison table */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 14px; }
+  table.cmp { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 560px; }
+  table.cmp th, table.cmp td { text-align: left; padding: 13px 16px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  table.cmp thead th { font-family: var(--font-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); background: var(--surface-2); }
+  table.cmp tbody tr:last-child td { border-bottom: none; }
+  table.cmp tr.win td { background: var(--merlin-soft); }
+  table.cmp tr.win td:first-child { font-weight: 650; color: var(--merlin-ink); }
+  table.cmp .verdict { font-family: var(--font-mono); font-size: 11px; }
+
+  /* svg block */
+  .figure { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); overflow-x: auto; }
+  .figure svg { display: block; width: 100%; height: auto; }
+  .figcap { font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); margin-top: 12px; letter-spacing: .02em; }
+
+  /* mock UI (final experience) */
+  .mock { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
+  .mock-bar { display: flex; align-items: center; gap: 8px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .mock-bar .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); }
+  .mock-bar .t { font-family: var(--font-mono); font-size: 11px; color: var(--faint); margin-left: 8px; }
+  .mock-body { display: grid; grid-template-columns: 130px 1fr 168px; min-height: 300px; }
+  .mock-col { padding: 14px; }
+  .mock-col.l { border-right: 1px solid var(--line); background: var(--surface-2); }
+  .mock-col.r { border-left: 1px solid var(--line); background: linear-gradient(180deg, var(--merlin-soft), var(--surface) 60%); }
+  .mock-row { height: 9px; border-radius: 5px; background: var(--line); margin-bottom: 9px; }
+  .mock-row.s { width: 60%; } .mock-row.m { width: 82%; } .mock-row.a { background: color-mix(in oklab, var(--merlin) 45%, var(--line)); width: 70%; }
+  .mock-clause { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-bottom: 10px; background: var(--surface); }
+  .mock-clause.risk { border-left: 3px solid var(--crit); }
+  .mock-clause.ok { border-left: 3px solid var(--ok); }
+  @media (max-width: 720px) { .mock-body { grid-template-columns: 1fr; } .mock-col.l, .mock-col.r { border: none; border-top: 1px solid var(--line); } }
+
+  /* annotation list */
+  .annos { display: flex; flex-direction: column; gap: 14px; }
+  .anno { display: flex; gap: 14px; align-items: baseline; }
+  .anno .num { font-family: var(--font-mono); font-size: 12px; color: #fff; background: var(--merlin); width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; flex: none; }
+  .anno b { display: block; font-size: 14.5px; }
+  .anno p { font-size: 13.5px; color: var(--muted); margin: 2px 0 0; }
+
+  /* design tokens */
+  .swatches { display: flex; flex-wrap: wrap; gap: 12px; }
+  .sw { width: 92px; }
+  .sw .box { height: 56px; border-radius: 10px; border: 1px solid var(--line); }
+  .sw .lab { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); margin-top: 6px; }
+  .typescale > div { border-bottom: 1px solid var(--line); padding: 12px 0; display: flex; align-items: baseline; gap: 16px; }
+  .typescale .tag { font-family: var(--font-mono); font-size: 11px; color: var(--faint); width: 90px; flex: none; }
+
+  /* edge case categories */
+  .edge { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+  .edge h4 { margin: 0 0 10px; font-size: 13px; font-family: var(--font-mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+  .edge ul { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 7px; }
+  .edge li { font-size: 13px; color: var(--ink-soft); display: flex; gap: 8px; align-items: baseline; }
+  .edge li b { color: var(--ink); font-weight: 600; }
+  .edge li .m { color: var(--merlin-ink); }
+
+  /* cover */
+  .cover { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+  .cover .huge { font-family: var(--font-display); font-weight: 600; font-size: clamp(38px, 6.5vw, 82px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 22px; text-wrap: balance; }
+  .cover .huge .accent { color: var(--merlin); font-style: italic; }
+  .cover-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 24px; margin-top: 40px; max-width: 720px; }
+  @media (max-width: 720px) { .cover-meta { grid-template-columns: repeat(2, 1fr); gap: 20px 24px; } }
+
+  .footer { text-align: center; padding: 60px; color: var(--faint); font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; }
+  a.inline { color: var(--merlin-ink); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--merlin) 40%, transparent); }
+  a.inline:hover { border-color: var(--merlin); }
+
+  :focus-visible { outline: 2px solid var(--merlin); outline-offset: 2px; border-radius: 4px; }
+
+  /* reveal */
+  .reveal { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s cubic-bezier(.16,1,.3,1); }
+  .reveal.in { opacity: 1; transform: none; }
+  @media (prefers-reduced-motion: reduce) { .reveal { opacity: 1; transform: none; transition: none; } }
+
+  @media (max-width: 1080px) {
+    :root { --rail: 0px; }
+    .rail { display: none; }
+    .pages { margin-left: 0; }
+    .page { padding: 72px 28px; }
+    .progress-top { display: block; position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--line); z-index: 60; }
+    .progress-top i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--indigo), var(--merlin)); }
+    .mobile-theme { position: fixed; top: 12px; right: 12px; z-index: 61; }
+  }
+  @media (min-width: 1081px) { .mobile-theme { display: none; } }
+</style>
+
+<div class="progress-top"><i id="ptop"></i></div>
+<button class="theme-btn mobile-theme" id="themeBtnM" aria-label="Toggle theme">◐</button>
+
+<div class="cs-wrap">
+  <!-- ================= RAIL ================= -->
+  <aside class="rail">
+    <div class="rail-brand">
+      <span class="rail-mark">Z</span>
+      <div><b>Zycus <span>iContract</span></b></div>
+    </div>
+    <nav class="rail-nav" id="railnav">
+      <a class="rail-link" href="#p01"><span class="n">01</span> Cover</a>
+      <a class="rail-link" href="#p02"><span class="n">02</span> Executive summary</a>
+      <a class="rail-link" href="#p03"><span class="n">03</span> Understanding Zycus</a>
+      <a class="rail-link" href="#p04"><span class="n">04</span> The business problem</a>
+      <a class="rail-link" href="#p05"><span class="n">05</span> Who we design for</a>
+      <a class="rail-link" href="#p06"><span class="n">06</span> The current journey</a>
+      <a class="rail-link" href="#p07"><span class="n">07</span> Research insights</a>
+      <a class="rail-link" href="#p08"><span class="n">08</span> Opportunity areas</a>
+      <a class="rail-link" href="#p09"><span class="n">09</span> Design principles</a>
+      <a class="rail-link" href="#p10"><span class="n">10</span> Information architecture</a>
+      <a class="rail-link" href="#p11"><span class="n">11</span> The authoring flow</a>
+      <a class="rail-link" href="#p12"><span class="n">12</span> Design exploration</a>
+      <a class="rail-link" href="#p13"><span class="n">13</span> The final experience</a>
+      <a class="rail-link" href="#p14"><span class="n">14</span> Merlin, the co-pilot</a>
+      <a class="rail-link" href="#p15"><span class="n">15</span> Panel architecture</a>
+      <a class="rail-link" href="#p16"><span class="n">16</span> Design system</a>
+      <a class="rail-link" href="#p17"><span class="n">17</span> Accessibility</a>
+      <a class="rail-link" href="#p18"><span class="n">18</span> Edge cases</a>
+      <a class="rail-link" href="#p19"><span class="n">19</span> Success metrics</a>
+      <a class="rail-link" href="#p20"><span class="n">20</span> Future opportunities</a>
+      <a class="rail-link" href="#p21"><span class="n">21</span> Reflection</a>
+    </nav>
+    <div class="rail-foot">
+      <span style="font-family:var(--font-mono);font-size:11px;color:var(--faint)">UX Case Study</span>
+      <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">◐ Theme</button>
+    </div>
+  </aside>
+
+  <main class="pages">
+
+    <!-- ============ 01 COVER ============ -->
+    <section class="page cover" id="p01">
+      <div class="inner">
+        <div class="eyebrow">UX Case Study <span class="pg">01 / 21</span></div>
+        <div class="chips" style="margin-bottom:26px">
+          <span class="chip merlin"><span class="dot"></span> AI-native CLM</span>
+          <span class="chip">Source-to-Pay</span>
+          <span class="chip">Enterprise SaaS</span>
+        </div>
+        <h1 class="huge">Redesigning Contract Authoring<br>for <span class="accent">Zycus iContract</span></h1>
+        <p class="lead">An AI-assisted enterprise contract authoring experience — where a procurement manager, legal counsel, and Merlin work the same document at the same time, and the software finally helps you decide rather than just capture what you already decided.</p>
+        <div class="cover-meta">
+          <div>
+            <p class="kicker">Role</p>
+            <ul class="clean" style="gap:6px">
+              <li style="font-size:14px">UX Research</li>
+              <li style="font-size:14px">Product &amp; Interaction Design</li>
+              <li style="font-size:14px">AI Experience</li>
+              <li style="font-size:14px">Design System</li>
+            </ul>
+          </div>
+          <div>
+            <p class="kicker">Duration</p>
+            <p style="margin:0;font-size:14px;color:var(--ink)">6–8 hours<br><span class="muted">concept sprint</span></p>
+            <p class="kicker" style="margin-top:22px">Scope</p>
+            <p style="margin:0;font-size:14px;color:var(--ink)">Procurement / Purchase Agreement<br><span class="muted">the flow that touches every CLM capability</span></p>
+          </div>
+          <div>
+            <p class="kicker">Tools</p>
+            <ul class="clean" style="gap:6px">
+              <li style="font-size:14px">Figma</li>
+              <li style="font-size:14px">Claude</li>
+              <li style="font-size:14px">Codex</li>
+              <li style="font-size:14px">shadcn/ui &amp; React</li>
+            </ul>
+          </div>
+          <div>
+            <p class="kicker">Deliverable</p>
+            <p style="margin:0;font-size:14px;color:var(--ink)">Working clickable prototype + this case study</p>
+            <p class="kicker" style="margin-top:22px">Read this first</p>
+            <p style="margin:0;font-size:13px" class="muted">The story before the screens — 20 pages of thinking, then the live prototype.</p>
+          </div>
+        </div>
+        <div class="note">A note on scope — this is a concept redesign built in a short sprint, not shipped Zycus product. Where I state a Zycus fact I mark it as sourced; everything else is design inference, labelled as such.</div>
+      </div>
+    </section>
+
+    <!-- ============ 02 EXECUTIVE SUMMARY ============ -->
+    <section class="page" id="p02">
+      <div class="inner">
+        <div class="eyebrow">Executive summary <span class="pg">02 / 21</span></div>
+        <h1 class="title">Contract authoring is where procurement slows down — not because people can't type, but because they can't <em class="q">decide</em> with confidence.</h1>
+        <div class="split" style="margin-top:34px">
+          <div>
+            <p>A purchase agreement looks like a form. It behaves like a negotiation. Behind every field is a decision with money, risk, and a regulator attached — <strong>is Net 90 acceptable for this supplier? Is our indemnity cap defensible? Does this clause still match the India playbook after legal updated it last month?</strong></p>
+            <p>Today those decisions are scattered across a template library nobody trusts, a legal inbox, three spreadsheets, and the tribal memory of whoever wrote the last similar contract. The authoring tool captures the outcome but does nothing to help reach it. So procurement managers over-rely on legal, legal drowns in low-risk redlines, and good contracts stall behind avoidable ones.</p>
+            <p>The redesign reframes the job. Authoring becomes a <strong>hybrid workspace</strong> — the document stays central, structure and progress live on the left, and <strong>Merlin</strong>, Zycus's AI, sits on the right as a context-aware co-pilot that surfaces risk, drafts clauses, and explains itself — while a human keeps every consequential decision.</p>
+          </div>
+          <div>
+            <div class="pull">The goal was not to redesign forms. The goal was to redesign decision-making.<small>Design thesis</small></div>
+            <div class="grid g2" style="gap:12px;margin-top:8px">
+              <div class="stat"><div class="n">3<span class="u">→0</span></div><div class="l">High risks surfaced, then resolved before submit</div></div>
+              <div class="stat"><div class="n">~2<span class="u">min</span></div><div class="l">Conversational intake vs. a long metadata form</div></div>
+              <div class="stat"><div class="n">1</div><div class="l">Health score replaces a blind "Submit"</div></div>
+              <div class="stat"><div class="n">6</div><div class="l">Entry points, one workspace they all land in</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 03 UNDERSTANDING ZYCUS ============ -->
+    <section class="page" id="p03">
+      <div class="inner">
+        <div class="eyebrow">Understanding the landscape <span class="pg">03 / 21</span></div>
+        <h1 class="title">iContract is one room in a much larger house.</h1>
+        <p class="lead">You can't design contract authoring well without understanding where it sits. A contract isn't a document that appears from nowhere — it's the connective tissue of the whole source-to-pay lifecycle.</p>
+        <div class="split" style="margin-top:30px">
+          <div>
+            <p class="kicker">Sourced context</p>
+            <p><strong>Zycus</strong> is a Source-to-Pay (S2P) suite — software that runs the full journey from finding a supplier to paying them. <strong>iContract</strong> is its Contract Lifecycle Management (CLM) module: authoring, negotiation, approval, storage and obligation tracking. <strong>Merlin</strong> is Zycus's AI layer that spans the suite.</p>
+            <p>Contract authoring is the hinge. It inherits data from Sourcing and Supplier Management upstream, and everything downstream — invoices, spend, compliance — is only as clean as the terms written here. A wrong payment term authored once becomes a thousand mis-paid invoices.</p>
+            <ul class="clean" style="margin-top:18px">
+              <li><strong>Upstream</strong> — supplier record, sourcing award, negotiated pricing flow <em>into</em> the contract</li>
+              <li><strong>Here</strong> — terms, clauses, risk, obligations are <em>decided</em></li>
+              <li><strong>Downstream</strong> — POs, invoices, spend analytics, renewals <em>execute</em> against them</li>
+            </ul>
+          </div>
+          <div class="figure">
+            <svg viewBox="0 0 420 340" role="img" aria-label="Source-to-Pay ecosystem with iContract at the centre">
+              <defs>
+                <marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--faint)"/></marker>
+              </defs>
+              <!-- ring nodes -->
+              <g font-family="var(--font-sans)" font-size="10" fill="var(--ink)" text-anchor="middle">
+                <!-- center -->
+                <circle cx="210" cy="170" r="52" fill="var(--merlin-soft)" stroke="var(--merlin)" stroke-width="1.5"/>
+                <text x="210" y="164" font-weight="700" font-size="12">iContract</text>
+                <text x="210" y="180" font-size="9" fill="var(--merlin-ink)">Authoring · CLM</text>
+                <!-- satellites -->
+                <g>
+                  <rect x="150" y="20" width="120" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="210" y="41" font-size="10.5">Sourcing &amp; Award</text>
+                  <rect x="316" y="70" width="94" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="363" y="91" font-size="10.5">Supplier Mgmt</text>
+                  <rect x="326" y="152" width="84" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="368" y="173" font-size="10.5">Approvals</text>
+                  <rect x="300" y="238" width="110" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="355" y="259" font-size="10.5">Invoices / P2P</text>
+                  <rect x="150" y="286" width="120" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="210" y="307" font-size="10.5">Spend Analytics</text>
+                  <rect x="10" y="238" width="110" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="65" y="259" font-size="10.5">Compliance</text>
+                  <rect x="10" y="152" width="84" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="52" y="173" font-size="10.5">Legal</text>
+                  <rect x="10" y="70" width="94" height="34" rx="9" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="57" y="91" font-size="10.5">Category Mgmt</text>
+                </g>
+              </g>
+              <g stroke="var(--faint)" stroke-width="1.2" fill="none" marker-end="url(#ar)" opacity=".8">
+                <path d="M210,54 L210,116"/>
+                <path d="M330,96 L250,150"/>
+                <path d="M326,168 L264,170"/>
+                <path d="M312,242 L252,196"/>
+                <path d="M210,286 L210,224"/>
+                <path d="M120,250 L165,198"/>
+                <path d="M94,168 L157,170"/>
+                <path d="M104,98 L168,150"/>
+              </g>
+            </svg>
+            <div class="figcap">Fig 03.1 — iContract sits at the centre of Source-to-Pay. Data flows in from sourcing &amp; suppliers; obligations flow out to approvals, invoices and spend.</div>
+          </div>
+        </div>
+        <div class="note"><b>Sources —</b> Zycus product positioning &amp; module naming (zycus.com, public product pages). S2P and CLM defined per standard industry usage (e.g. Gartner CLM category). Merlin referenced as Zycus's AI brand. Facts used for orientation only; interaction detail is my design proposal.</div>
+      </div>
+    </section>
+
+    <!-- ============ 04 BUSINESS PROBLEM ============ -->
+    <section class="page" id="p04">
+      <div class="inner">
+        <div class="eyebrow">The business problem <span class="pg">04 / 21</span></div>
+        <h1 class="title">A slow contract isn't a typing problem. It's an <em class="q">uncertainty</em> problem.</h1>
+        <p class="lead">Every friction below traces back to the same root: the person authoring can't see whether what they're writing is safe, standard, or a liability — so they stop and ask someone who can.</p>
+        <div class="grid g3" style="margin-top:32px">
+          <div class="card"><div class="chip crit" style="margin-bottom:12px"><span class="dot"></span> Commercial</div><h3>Hidden risk</h3><p>Non-standard terms — a Net 90, a capped indemnity — slip through because nothing flags them against policy at the moment of writing.</p></div>
+          <div class="card"><div class="chip crit" style="margin-bottom:12px"><span class="dot"></span> Legal</div><h3>Redline overload</h3><p>Legal reviews everything, including the 80% that's standard, because there's no signal separating "routine" from "needs a lawyer".</p></div>
+          <div class="card"><div class="chip warn" style="margin-bottom:12px"><span class="dot"></span> Operational</div><h3>Duplicate entry</h3><p>The same supplier, value and dates are re-typed across intake, metadata and the document — each copy a chance to diverge.</p></div>
+          <div class="card"><div class="chip warn" style="margin-bottom:12px"><span class="dot"></span> Process</div><h3>Template roulette</h3><p>Dozens of templates, unclear which is current or right for this geography. Pick wrong and you inherit the wrong jurisdiction.</p></div>
+          <div class="card"><div class="chip warn" style="margin-bottom:12px"><span class="dot"></span> Quality</div><h3>Clause inconsistency</h3><p>Fallback language lives in people's heads. Two authors solve the same negotiation two different — and unequal — ways.</p></div>
+          <div class="card"><div class="chip" style="margin-bottom:12px"><span class="dot"></span> Throughput</div><h3>Approval delays</h3><p>Contracts reach approvers incomplete, bounce back, and wait — while nobody can see what's actually blocking them.</p></div>
+        </div>
+        <div class="pull" style="margin-top:36px">When the tool can't tell you what's risky, every decision routes through a human bottleneck.</div>
+      </div>
+    </section>
+
+    <!-- ============ 05 USERS ============ -->
+    <section class="page" id="p05">
+      <div class="inner">
+        <div class="eyebrow">Who we design for <span class="pg">05 / 21</span></div>
+        <h1 class="title">One document, five people, competing definitions of "done".</h1>
+        <p class="lead">The procurement manager owns the outcome, but the contract only moves when four other people trust it. Designing for the author alone would just move the bottleneck.</p>
+
+        <div class="card merlin" style="margin-top:30px">
+          <div class="chip merlin" style="margin-bottom:14px"><span class="dot"></span> Primary persona</div>
+          <div class="split" style="gap:32px">
+            <div>
+              <h3 style="font-size:22px;font-family:var(--font-display);font-weight:600">Jitendra Kumar — Procurement Manager</h3>
+              <p style="color:var(--ink-soft);font-size:15px;margin-top:8px">Runs manufacturing category buys. Fluent in commercial terms, not in law. Judged on cycle time and savings, exposed on compliance he can't fully see.</p>
+            </div>
+            <div class="grid" style="gap:14px">
+              <div><p class="kicker">Goals</p><p class="muted" style="font-size:13.5px">Author a compliant contract fast, without waiting on legal for routine terms.</p></div>
+              <div><p class="kicker">Pain points</p><p class="muted" style="font-size:13.5px">Can't tell safe from risky; re-keys data; guesses at templates.</p></div>
+              <div><p class="kicker">Success metric</p><p class="muted" style="font-size:13.5px">Time-to-approval-ready, and how rarely legal sends it back.</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid g4" style="margin-top:18px">
+          <div class="card"><p class="kicker">Secondary</p><h3>Legal Counsel</h3><p><b style="color:var(--ink)">Wants</b> to spend attention only on genuine deviations. <b style="color:var(--ink)">Fears</b> a non-standard clause slipping through unseen.</p></div>
+          <div class="card"><p class="kicker">Secondary</p><h3>Finance Controller</h3><p><b style="color:var(--ink)">Wants</b> payment terms and value to protect DSO and match budget. <b style="color:var(--ink)">Fears</b> a Net 90 hiding in clause 4.</p></div>
+          <div class="card"><p class="kicker">Secondary</p><h3>Business Owner</h3><p><b style="color:var(--ink)">Wants</b> the deal signed on time. <b style="color:var(--ink)">Fears</b> process for its own sake.</p></div>
+          <div class="card"><p class="kicker">Secondary</p><h3>Contract Admin</h3><p><b style="color:var(--ink)">Wants</b> clean metadata and an auditable trail. <b style="color:var(--ink)">Fears</b> renewals and obligations falling through.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 06 CURRENT JOURNEY ============ -->
+    <section class="page" id="p06">
+      <div class="inner">
+        <div class="eyebrow">The current journey <span class="pg">06 / 21</span></div>
+        <h1 class="title">Where the time actually goes.</h1>
+        <p class="lead">Mapping the existing path, the wasted time clusters in three places — and none of them are the writing itself. They're the <em class="q">hand-offs and the not-knowing</em>.</p>
+        <div class="figure" style="margin-top:28px">
+          <div class="journey">
+            <div class="jstep pain"><h4>Find a template</h4><p>Search a long library, unsure which is current or right for India.</p><span class="emo bad">Friction · guesswork</span></div>
+            <div class="jstep pain"><h4>Re-key metadata</h4><p>Type supplier, value, dates into a long form already known upstream.</p><span class="emo bad">Duplicate work</span></div>
+            <div class="jstep"><h4>Draft &amp; edit</h4><p>Write clauses; paste fallback language remembered from last time.</p><span class="emo mid">Inconsistent</span></div>
+            <div class="jstep pain"><h4>Send to legal</h4><p>Email the doc, wait days for a full review of mostly-standard text.</p><span class="emo bad">Wait state</span></div>
+            <div class="jstep pain"><h4>Reconcile redlines</h4><p>Merge comments across versions; lose track of what changed.</p><span class="emo bad">Version chaos</span></div>
+            <div class="jstep"><h4>Submit &amp; hope</h4><p>Route for approval blind; bounce back if a field or clause is missing.</p><span class="emo mid">Rework risk</span></div>
+          </div>
+        </div>
+        <div class="grid g3" style="margin-top:24px">
+          <div class="stat"><div class="n">3</div><div class="l">Hand-offs before a contract is even complete</div><div class="d">Template → legal → approval, each a queue</div></div>
+          <div class="stat"><div class="n">×3</div><div class="l">Places the same core data is entered</div><div class="d">Intake, metadata, document body</div></div>
+          <div class="stat"><div class="n">80%</div><div class="l">Of legal's review is on standard text</div><div class="d">Attention spent where it isn't needed</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 07 RESEARCH INSIGHTS ============ -->
+    <section class="page" id="p07">
+      <div class="inner">
+        <div class="eyebrow">Research insights <span class="pg">07 / 21</span></div>
+        <h1 class="title">What good looks like — borrowed as principles, not screens.</h1>
+        <p class="lead">I studied how adjacent products earned trust and speed, then extracted the underlying pattern rather than copying the surface.</p>
+        <div class="grid g2" style="margin-top:30px">
+          <div class="card"><h3>Document-first editors set the standard for focus</h3><p>Notion and Word keep the artefact central and let tools orbit it. Enterprise CLM often buries the document under tabs — a step backwards for the person doing the actual writing.</p></div>
+          <div class="card"><h3>AI copilots win on trust, not autonomy</h3><p>The copilots people keep using (Cursor, Notion AI, GitHub Copilot) suggest, cite, and wait for accept. The ones people disable act without asking. Trust is a UX property, not a model property.</p></div>
+          <div class="card"><h3>Enterprise systems reward legible state</h3><p>Salesforce and Linear make status readable at a glance — a pill, a stage, a health bar. Ambiguity is the enemy of speed in multi-actor workflows.</p></div>
+          <div class="card"><h3>CLM leaders compete on clause intelligence</h3><p>The category's frontier (Ironclad, Icertis-class tooling) is playbook-driven authoring: standard vs. fallback language, risk scoring, deviation detection. That's where AI earns its place.</p></div>
+        </div>
+        <div class="pull" style="margin-top:34px">The insight that shaped everything: people don't distrust AI's answers. They distrust answers they can't <em class="q">check</em>.</div>
+        <div class="note"><b>Method &amp; sources —</b> heuristic review of public products and patterns: Notion / Notion AI, Microsoft Word, Cursor, GitHub Copilot, Salesforce Lightning, Linear, and CLM category leaders (Ironclad, Icertis). Principles extracted, not UI reproduced. No proprietary Zycus research was available for this sprint — a gap I name in the reflection.</div>
+      </div>
+    </section>
+
+    <!-- ============ 08 OPPORTUNITY ============ -->
+    <section class="page" id="p08">
+      <div class="inner">
+        <div class="eyebrow">Opportunity areas <span class="pg">08 / 21</span></div>
+        <h1 class="title">Where design effort buys the most decision-confidence.</h1>
+        <p class="lead">Plotting opportunities on impact versus effort kept the sprint honest — chase the top-left first, park the bottom-right.</p>
+        <div class="split" style="margin-top:28px;grid-template-columns:1.15fr .85fr">
+          <div class="figure">
+            <svg viewBox="0 0 460 360" role="img" aria-label="Impact versus effort matrix">
+              <g font-family="var(--font-mono)" font-size="10" fill="var(--faint)">
+                <line x1="60" y1="20" x2="60" y2="320" stroke="var(--line-strong)"/>
+                <line x1="60" y1="320" x2="440" y2="320" stroke="var(--line-strong)"/>
+                <line x1="250" y1="20" x2="250" y2="320" stroke="var(--line)" stroke-dasharray="3 3"/>
+                <line x1="60" y1="170" x2="440" y2="170" stroke="var(--line)" stroke-dasharray="3 3"/>
+                <text x="46" y="24" text-anchor="end">High</text>
+                <text x="46" y="318" text-anchor="end">Low</text>
+                <text x="52" y="338">Low effort</text>
+                <text x="440" y="338" text-anchor="end">High effort</text>
+                <text x="20" y="175" transform="rotate(-90 20 175)" text-anchor="middle">Impact on decision-confidence</text>
+                <text x="150" y="40" fill="var(--ok)" font-weight="700">DO FIRST</text>
+              </g>
+              <g font-family="var(--font-sans)" font-size="10.5">
+                <!-- bubbles: quick high-impact -->
+                <g>
+                  <circle cx="130" cy="90" r="30" fill="var(--merlin-soft)" stroke="var(--merlin)"/>
+                  <text x="130" y="88" text-anchor="middle" fill="var(--merlin-ink)" font-weight="700">Risk</text>
+                  <text x="130" y="100" text-anchor="middle" fill="var(--merlin-ink)">flags</text>
+                </g>
+                <g>
+                  <circle cx="205" cy="120" r="28" fill="var(--merlin-soft)" stroke="var(--merlin)"/>
+                  <text x="205" y="118" text-anchor="middle" fill="var(--merlin-ink)" font-weight="700">Auto</text>
+                  <text x="205" y="130" text-anchor="middle" fill="var(--merlin-ink)">metadata</text>
+                </g>
+                <g>
+                  <circle cx="150" cy="150" r="24" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="150" y="153" text-anchor="middle" fill="var(--ink)">Approval</text>
+                </g>
+                <!-- big bets high impact high effort -->
+                <g>
+                  <circle cx="330" cy="95" r="34" fill="var(--merlin-soft)" stroke="var(--merlin)"/>
+                  <text x="330" y="92" text-anchor="middle" fill="var(--merlin-ink)" font-weight="700">Clause</text>
+                  <text x="330" y="104" text-anchor="middle" fill="var(--merlin-ink)">intelligence</text>
+                </g>
+                <g>
+                  <circle cx="360" cy="165" r="28" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="360" y="163" text-anchor="middle" fill="var(--ink)">Guided</text>
+                  <text x="360" y="175" text-anchor="middle" fill="var(--ink)">authoring</text>
+                </g>
+                <!-- low impact -->
+                <g>
+                  <circle cx="150" cy="255" r="22" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="150" y="258" text-anchor="middle" fill="var(--muted)">Theming</text>
+                </g>
+                <g>
+                  <circle cx="360" cy="260" r="22" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+                  <text x="360" y="258" text-anchor="middle" fill="var(--muted)">Voice</text>
+                  <text x="360" y="270" text-anchor="middle" fill="var(--muted)">input</text>
+                </g>
+              </g>
+            </svg>
+            <div class="figcap">Fig 08.1 — Violet = shipped in this prototype. Grey = acknowledged, staged, or deferred to future work.</div>
+          </div>
+          <div>
+            <p class="kicker">The bet</p>
+            <p>The highest-leverage moves aren't features — they're <strong>signals</strong>. Risk flags and auto-filled metadata are relatively cheap and change the author's confidence immediately. <strong>Clause intelligence</strong> — standard vs. fallback variants with risk scoring — is the harder, higher bet that defines the product's ceiling, so it's built in too.</p>
+            <p>Deferring voice and heavy theming wasn't dismissal; it was sequencing. They don't move the core metric — <em class="q">can I decide with confidence?</em> — enough to earn sprint time yet.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 09 PRINCIPLES ============ -->
+    <section class="page" id="p09">
+      <div class="inner">
+        <div class="eyebrow">Design principles <span class="pg">09 / 21</span></div>
+        <h1 class="title">Eight rules I could hold every screen against.</h1>
+        <p class="lead">Principles only matter if they can settle an argument. Each of these decided a real trade-off later in the build.</p>
+        <div class="grid g2" style="margin-top:30px">
+          <div class="card"><h3>01 · Guide, don't overwhelm</h3><p>Enterprise power without enterprise clutter. Progressive disclosure over showing every control at once.</p></div>
+          <div class="card"><h3>02 · The human keeps the decision</h3><p>AI proposes; a person disposes. Nothing consequential — legal, financial, compliance — changes without an explicit human accept.</p></div>
+          <div class="card"><h3>03 · AI must explain itself</h3><p>Every suggestion shows what it found, why it matters, the policy basis, and a confidence level. No black-box verdicts.</p></div>
+          <div class="card"><h3>04 · Compliance without friction</h3><p>Guardrails should feel like help, not a gate. Surface the problem in context; never block the author from making progress.</p></div>
+          <div class="card"><h3>05 · Context before chrome</h3><p>The right panel always knows the current clause, supplier, policy and stage — so help is relevant without being asked.</p></div>
+          <div class="card"><h3>06 · Trust before automation</h3><p>Earn the right to automate by first being transparent and correct. Confidence is compounded, not assumed.</p></div>
+          <div class="card"><h3>07 · Legible state</h3><p>Status, risk and readiness are visible at a glance — a badge, a stripe, a health score — not buried in a report.</p></div>
+          <div class="card"><h3>08 · Never a dead end</h3><p>Missing information is surfaced, not blocked. Progress is always possible; the system tracks what's incomplete.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 10 IA ============ -->
+    <section class="page" id="p10">
+      <div class="inner">
+        <div class="eyebrow">Information architecture <span class="pg">10 / 21</span></div>
+        <h1 class="title">Structure that mirrors how a contract is actually reasoned about.</h1>
+        <p class="lead">The IA isn't a menu — it's the contract's anatomy. Every left-nav item is a lens on the same object, not a separate destination.</p>
+        <div class="figure" style="margin-top:26px">
+          <svg viewBox="0 0 900 300" role="img" aria-label="Information architecture tree">
+            <g font-family="var(--font-sans)" font-size="11" fill="var(--ink)">
+              <rect x="360" y="14" width="180" height="40" rx="10" fill="var(--merlin-soft)" stroke="var(--merlin)"/>
+              <text x="450" y="33" text-anchor="middle" font-weight="700">Contract Workspace</text>
+              <text x="450" y="47" text-anchor="middle" font-size="9" fill="var(--merlin-ink)">the object everything hangs off</text>
+            </g>
+            <g stroke="var(--line-strong)" fill="none" stroke-width="1.2">
+              <path d="M450,54 L450,74 M120,90 L780,90 M120,90 L120,110 M255,90 L255,110 M390,90 L390,110 M525,90 L525,110 M660,90 L660,110 M780,90 L780,110"/>
+              <path d="M450,74 L450,90"/>
+            </g>
+            <g font-family="var(--font-sans)" font-size="10.5" fill="var(--ink)" text-anchor="middle">
+              <g><rect x="60" y="110" width="120" height="34" rx="8" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="120" y="131">Overview</text></g>
+              <g><rect x="200" y="110" width="110" height="34" rx="8" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="255" y="131">Metadata</text></g>
+              <g><rect x="335" y="110" width="110" height="34" rx="8" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="390" y="131">Clauses</text></g>
+              <g><rect x="470" y="110" width="110" height="34" rx="8" fill="var(--merlin-soft)" stroke="var(--merlin)"/><text x="525" y="127" fill="var(--merlin-ink)">AI Suggestions</text><text x="525" y="139" font-size="8" fill="var(--merlin-ink)">Merlin</text></g>
+              <g><rect x="605" y="110" width="110" height="34" rx="8" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="660" y="131">Collaboration</text></g>
+              <g><rect x="740" y="110" width="110" height="34" rx="8" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="795" y="131">Governance</text></g>
+            </g>
+            <g stroke="var(--line)" fill="none" stroke-width="1"><path d="M120,144 L120,164 M255,144 L255,164 M390,144 L390,164 M660,144 L660,164 M795,144 L795,164"/></g>
+            <g font-family="var(--font-mono)" font-size="9" fill="var(--muted)" text-anchor="middle">
+              <text x="120" y="180">Health · summary</text>
+              <text x="120" y="194">Commercial detail</text>
+              <text x="255" y="180">Supplier · Financial</text>
+              <text x="255" y="194">Legal · Renewal · Compliance</text>
+              <text x="390" y="180">Status · Risk · Variants</text>
+              <text x="390" y="194">Versions · Owner</text>
+              <text x="660" y="180">Comments · Mentions</text>
+              <text x="660" y="194">Assignments</text>
+              <text x="795" y="180">Approvals · Audit</text>
+              <text x="795" y="194">Attachments · Versions</text>
+            </g>
+            <g font-family="var(--font-sans)" font-size="10" fill="var(--muted)" text-anchor="middle">
+              <text x="450" y="250" font-weight="600" fill="var(--ink)">One object · many lenses</text>
+              <text x="450" y="266">Selecting a clause syncs Metadata, AI, Comments, Versions and Risk — no context is lost switching tabs.</text>
+            </g>
+          </svg>
+          <div class="figcap">Fig 10.1 — The contract is the single source of truth; navigation items are synchronized views onto it.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 11 USER FLOW ============ -->
+    <section class="page" id="p11">
+      <div class="inner">
+        <div class="eyebrow">The authoring flow <span class="pg">11 / 21</span></div>
+        <h1 class="title">Six ways in, one place to work.</h1>
+        <p class="lead">Whether you start from Merlin, a template, third-party paper, a blank editor, or a duplicate — every path converges on the same workspace, so the mental model is learned once.</p>
+        <div class="figure" style="margin-top:26px">
+          <svg viewBox="0 0 900 260" role="img" aria-label="End to end contract authoring flow">
+            <defs><marker id="fa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--merlin)"/></marker></defs>
+            <g font-family="var(--font-sans)" font-size="10.5" fill="var(--ink)" text-anchor="middle">
+              <!-- entry points -->
+              <g font-family="var(--font-mono)" font-size="9" fill="var(--muted)"><text x="70" y="24" text-anchor="middle">START</text></g>
+              <g>
+                <rect x="20" y="34" width="100" height="26" rx="7" fill="var(--merlin-soft)" stroke="var(--merlin)"/><text x="70" y="51" fill="var(--merlin-ink)" font-size="9.5">Merlin intake</text>
+                <rect x="20" y="66" width="100" height="26" rx="7" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="70" y="83" font-size="9.5">Template</text>
+                <rect x="20" y="98" width="100" height="26" rx="7" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="70" y="115" font-size="9.5">Import paper</text>
+                <rect x="20" y="130" width="100" height="26" rx="7" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="70" y="147" font-size="9.5">Blank editor</text>
+                <rect x="20" y="162" width="100" height="26" rx="7" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="70" y="179" font-size="9.5">Duplicate</text>
+              </g>
+              <!-- converge -->
+              <g stroke="var(--merlin)" fill="none" stroke-width="1.2" marker-end="url(#fa)" opacity=".8">
+                <path d="M120,47 C150,47 150,110 175,110"/>
+                <path d="M120,79 C150,79 150,110 175,110"/>
+                <path d="M120,111 L175,110"/>
+                <path d="M120,143 C150,143 150,110 175,110"/>
+                <path d="M120,175 C150,175 150,110 175,110"/>
+              </g>
+              <!-- linear stages -->
+              <g>
+                <rect x="178" y="96" width="92" height="30" rx="8" fill="var(--surface)" stroke="var(--merlin)"/><text x="224" y="115" font-size="9.5">Metadata</text>
+                <rect x="300" y="96" width="92" height="30" rx="8" fill="var(--surface)" stroke="var(--merlin)"/><text x="346" y="115" font-size="9.5">Template</text>
+                <rect x="422" y="96" width="92" height="30" rx="8" fill="var(--surface)" stroke="var(--merlin)"/><text x="468" y="115" font-size="9.5">Draft</text>
+              </g>
+              <g stroke="var(--merlin)" fill="none" stroke-width="1.2" marker-end="url(#fa)"><path d="M270,111 L298,111"/><path d="M392,111 L420,111"/><path d="M514,111 L542,111"/></g>
+              <!-- workspace hub -->
+              <g>
+                <rect x="544" y="82" width="150" height="58" rx="12" fill="var(--merlin-soft)" stroke="var(--merlin)" stroke-width="1.5"/>
+                <text x="619" y="106" font-weight="700" fill="var(--merlin-ink)">Workspace</text>
+                <text x="619" y="122" font-size="8.5" fill="var(--merlin-ink)">author · risk · collaborate</text>
+              </g>
+              <!-- loop cluster -->
+              <g stroke="var(--faint)" fill="none" stroke-width="1" stroke-dasharray="3 3">
+                <path d="M619,82 C619,50 700,50 700,80" marker-end="url(#fa)"/>
+              </g>
+              <g><rect x="655" y="30" width="90" height="24" rx="7" fill="var(--surface-2)" stroke="var(--line-strong)"/><text x="700" y="46" font-size="9">Risk resolve ⟲</text></g>
+              <!-- to approval -->
+              <g stroke="var(--merlin)" fill="none" stroke-width="1.2" marker-end="url(#fa)"><path d="M694,111 L730,111"/></g>
+              <g>
+                <rect x="732" y="82" width="90" height="30" rx="8" fill="var(--surface)" stroke="var(--merlin)"/><text x="777" y="101" font-size="9.5">Validation</text>
+                <rect x="732" y="118" width="90" height="30" rx="8" fill="var(--surface)" stroke="var(--merlin)"/><text x="777" y="137" font-size="9.5">Health score</text>
+              </g>
+              <g stroke="var(--merlin)" fill="none" stroke-width="1.2" marker-end="url(#fa)"><path d="M777,148 L777,170"/></g>
+              <g><rect x="712" y="172" width="130" height="30" rx="8" fill="var(--ok-soft)" stroke="var(--ok)"/><text x="777" y="191" fill="var(--ok)" font-size="9.5">Approval &amp; e-sign</text></g>
+            </g>
+          </svg>
+          <div class="figcap">Fig 11.1 — Guided lead-in (metadata → template → draft), an open authoring loop, then a gated exit. Structure where it reduces uncertainty; freedom where it doesn't.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 12 EXPLORATION ============ -->
+    <section class="page" id="p12">
+      <div class="inner">
+        <div class="eyebrow">Design exploration <span class="pg">12 / 21</span></div>
+        <h1 class="title">Five ways to shape the work — and why only one respects both novice and expert.</h1>
+        <p class="lead">The layout decision <em class="q">is</em> the product decision. I pressured five models against the same question: does it help you decide, without getting in the way once you know what you're doing?</p>
+        <div class="tablewrap" style="margin-top:26px">
+          <table class="cmp">
+            <thead><tr><th>Model</th><th>Strength</th><th>Why it fails here</th><th class="verdict">Verdict</th></tr></thead>
+            <tbody>
+              <tr><td>Long wizard</td><td>Safe for novices; enforces order</td><td>Punishes experts; hides the document; every contract feels like the first</td><td class="verdict">✕</td></tr>
+              <tr><td>Tabbed record</td><td>Familiar enterprise pattern</td><td>Fragments one contract into disconnected screens; context lost on every switch</td><td class="verdict">✕</td></tr>
+              <tr><td>Document-first</td><td>Focus on the artefact</td><td>Great for writing, weak on structure, risk and multi-actor governance</td><td class="verdict">△</td></tr>
+              <tr><td>AI-first (chat)</td><td>Fast for simple asks</td><td>Turns a high-stakes legal document into a black box; no legible state or control</td><td class="verdict">✕</td></tr>
+              <tr class="win"><td>Hybrid panel</td><td>Document central; structure left; AI right</td><td>Nothing — it carries novice guidance and expert speed in one frame</td><td class="verdict">✓ chosen</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="margin-top:22px">The hybrid panel wins because it refuses the false choice. The <strong>document stays the hero</strong> (document-first's strength), <strong>structure and progress live left</strong> (the wizard's guidance, without its rigidity), and <strong>AI sits right</strong> (the copilot's power, kept transparent and optional). A novice follows the rails; an expert ignores them and just writes.</p>
+      </div>
+    </section>
+
+    <!-- ============ 13 FINAL EXPERIENCE ============ -->
+    <section class="page" id="p13">
+      <div class="inner">
+        <div class="eyebrow">The final experience <span class="pg">13 / 21</span></div>
+        <h1 class="title">The workspace, annotated.</h1>
+        <p class="lead">Three panels, one document, and a running sense of how close you are to done. Here's what each decision is doing for the user.</p>
+        <div class="split" style="margin-top:26px;grid-template-columns:1.25fr .75fr">
+          <div class="mock" role="img" aria-label="Annotated workspace mockup">
+            <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">ABC Manufacturing — Purchase Agreement · Draft · Health 61</span></div>
+            <div class="mock-body">
+              <div class="mock-col l">
+                <div class="mock-row s"></div><div class="mock-row m"></div><div class="mock-row"></div><div class="mock-row s"></div><div class="mock-row m"></div>
+                <div style="height:1px;background:var(--line);margin:10px 0"></div>
+                <div class="mock-row s"></div><div class="mock-row m"></div>
+              </div>
+              <div class="mock-col">
+                <div class="mock-clause ok"><div class="mock-row s" style="margin-bottom:6px"></div><div class="mock-row"></div></div>
+                <div class="mock-clause risk"><div class="mock-row s" style="margin-bottom:6px;background:color-mix(in oklab,var(--crit) 40%,var(--line))"></div><div class="mock-row m"></div><div class="mock-row"></div></div>
+                <div class="mock-clause"><div class="mock-row s" style="margin-bottom:6px"></div><div class="mock-row m"></div></div>
+              </div>
+              <div class="mock-col r">
+                <div class="chip merlin" style="margin-bottom:10px"><span class="dot"></span> Merlin</div>
+                <div class="mock-row a"></div><div class="mock-row m"></div><div class="mock-row"></div>
+                <div style="height:8px"></div><div class="mock-row a"></div><div class="mock-row s"></div>
+              </div>
+            </div>
+          </div>
+          <div class="annos">
+            <div class="anno"><span class="num">1</span><div><b>Left — the anatomy</b><p>Health score, section nav, and a live clause outline with risk dots. Answers "where am I and what's left?" without leaving the page.</p></div></div>
+            <div class="anno"><span class="num">2</span><div><b>Centre — clause cards</b><p>The document as reviewable units. Each carries status, risk, owner, standard/fallback variants and version history — the green stripe is approved, the red is at-risk.</p></div></div>
+            <div class="anno"><span class="num">3</span><div><b>Right — Merlin</b><p>Proactive, contextual, and always accountable. It opens with "I found 3 risks and 2 missing clauses," not "How can I help?"</p></div></div>
+            <div class="anno"><span class="num">4</span><div><b>Health, not a blind Submit</b><p>Approval readiness is a transparent, gated score tied to live state — you know you're ready before you route.</p></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 14 MERLIN ============ -->
+    <section class="page" id="p14">
+      <div class="inner">
+        <div class="eyebrow">Merlin, the co-pilot <span class="pg">14 / 21</span></div>
+        <h1 class="title">Not a chatbot. A colleague who has read the playbook.</h1>
+        <p class="lead">A chat box makes you do the work of knowing what to ask. On a legal document, that's exactly backwards. Merlin is <em class="q">proactive and accountable</em> — it reads the contract and tells you what deserves a decision.</p>
+        <div class="split" style="margin-top:28px">
+          <div>
+            <p class="kicker">Why contextual, not conversational</p>
+            <p>Merlin always knows the current clause, the supplier, company policy, jurisdiction, prior contracts and the approval stage. That context is the product. It's why it can say <em class="q">"This supplier usually accepts Net 45"</em> instead of waiting to be asked.</p>
+            <p class="kicker" style="margin-top:22px">The anatomy of a trustworthy suggestion</p>
+            <p>Every consequential suggestion exposes the same five things, so the human can verify in seconds rather than take it on faith:</p>
+            <ul class="clean" style="margin-top:14px">
+              <li><strong>What</strong> it detected or generated</li>
+              <li><strong>Why</strong> it matters, in plain language</li>
+              <li><strong>Basis</strong> — the exact policy or playbook clause cited</li>
+              <li><strong>Confidence</strong> — a percentage, not a vibe</li>
+              <li><strong>Actions</strong> — Apply · Compare · Explain · Ignore · Escalate</li>
+            </ul>
+          </div>
+          <div>
+            <div class="card merlin">
+              <div class="chip merlin" style="margin-bottom:12px"><span class="dot"></span> Live suggestion</div>
+              <h3 style="font-size:15px">Payment Terms exceed policy</h3>
+              <p style="color:var(--ink-soft);font-size:13.5px;margin:8px 0">Supplier requested Net 90. Company policy for this category is Net 45 — high cash-flow and DSO impact.</p>
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:12px">Basis: Procurement Payment Standard §3.2 · Confidence 97%</div>
+              <div class="chips">
+                <span class="chip merlin">Apply fix</span><span class="chip">Compare</span><span class="chip">Explain</span><span class="chip">Escalate</span>
+              </div>
+            </div>
+            <div class="grid g2" style="margin-top:16px;gap:12px">
+              <div class="card" style="padding:16px"><h3 style="font-size:13.5px">Guardrail</h3><p style="font-size:12.5px">Never edits legal, financial or compliance text silently. AI-drafted clauses are flagged for review, not auto-approved.</p></div>
+              <div class="card" style="padding:16px"><h3 style="font-size:13.5px">Degrades honestly</h3><p style="font-size:12.5px">Low confidence, missing permissions or conflicting policy each have a defined state — it says so rather than guessing.</p></div>
+            </div>
+          </div>
+        </div>
+        <p class="kicker" style="margin-top:30px">What Merlin does across the workspace</p>
+        <div class="chips" style="margin-top:12px">
+          <span class="chip">Draft clause</span><span class="chip">Rewrite · simplify · legal · business</span><span class="chip">Shorten / expand</span><span class="chip">Translate</span><span class="chip">Explain</span><span class="chip">Compare vs. standard</span><span class="chip">Suggest missing clauses</span><span class="chip">Policy validation</span><span class="chip">Risk scoring</span><span class="chip">Clause benchmarking</span><span class="chip">Auto-metadata</span><span class="chip">Duplicate detection</span><span class="chip">Supplier history</span><span class="chip">Approval prediction</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 15 PANEL ARCHITECTURE ============ -->
+    <section class="page" id="p15">
+      <div class="inner">
+        <div class="eyebrow">Panel architecture <span class="pg">15 / 21</span></div>
+        <h1 class="title">Why three panels beat a wall of tabs.</h1>
+        <p class="lead">Traditional enterprise UIs fragment one object across many screens. The panel model keeps the object whole and puts everything else in service of it — synchronized, collapsible, and role-aware.</p>
+        <div class="figure" style="margin-top:26px">
+          <svg viewBox="0 0 820 240" role="img" aria-label="Three panel architecture diagram">
+            <g font-family="var(--font-sans)">
+              <rect x="20" y="20" width="170" height="200" rx="12" fill="var(--surface-2)" stroke="var(--line-strong)"/>
+              <rect x="205" y="20" width="360" height="200" rx="12" fill="var(--surface)" stroke="var(--merlin)" stroke-width="1.5"/>
+              <rect x="580" y="20" width="220" height="200" rx="12" fill="var(--merlin-soft)" stroke="var(--merlin)"/>
+              <text x="105" y="46" text-anchor="middle" font-weight="700" font-size="12" fill="var(--ink)">LEFT</text>
+              <text x="385" y="46" text-anchor="middle" font-weight="700" font-size="12" fill="var(--ink)">CENTRE</text>
+              <text x="690" y="46" text-anchor="middle" font-weight="700" font-size="12" fill="var(--merlin-ink)">RIGHT</text>
+              <g font-size="10.5" fill="var(--muted)" text-anchor="middle">
+                <text x="105" y="68">Structure</text>
+                <text x="105" y="96" font-size="9.5">Health score</text>
+                <text x="105" y="112" font-size="9.5">Section nav</text>
+                <text x="105" y="128" font-size="9.5">Clause outline</text>
+                <text x="105" y="144" font-size="9.5">Risk dots</text>
+                <text x="385" y="68">The document</text>
+                <text x="385" y="96" font-size="9.5">Clause cards · status · risk</text>
+                <text x="385" y="112" font-size="9.5">Variants · versions · owners</text>
+                <text x="385" y="128" font-size="9.5">Inline edit &amp; track changes</text>
+                <text x="690" y="68" fill="var(--merlin-ink)">Intelligence</text>
+                <text x="690" y="96" font-size="9.5" fill="var(--merlin-ink)">Merlin · Insights</text>
+                <text x="690" y="112" font-size="9.5" fill="var(--merlin-ink)">Generate · Rewrite</text>
+                <text x="690" y="128" font-size="9.5" fill="var(--merlin-ink)">Compare · Explain · Risk</text>
+              </g>
+              <g stroke="var(--merlin)" stroke-width="1" stroke-dasharray="4 3" fill="none">
+                <path d="M190,175 L205,175"/><path d="M565,175 L580,175"/>
+              </g>
+              <text x="410" y="200" text-anchor="middle" font-size="10" fill="var(--muted)">Selecting a clause in any panel syncs the other two — selection is shared state, not a navigation event.</text>
+              <text x="410" y="215" text-anchor="middle" font-size="9" fill="var(--faint)">Both side panels collapse; defaults differ for novice (rails open) vs. expert (document maximised).</text>
+            </g>
+          </svg>
+          <div class="figcap">Fig 15.1 — Left describes, centre holds, right assists. One object, three synchronized lenses.</div>
+        </div>
+        <div class="grid g3" style="margin-top:20px">
+          <div class="card"><h3>Selection is shared</h3><p>Click a clause in the outline, a risk in Merlin, or the card itself — all three panels focus together. No context is lost switching tools.</p></div>
+          <div class="card"><h3>Collapsible &amp; resizable</h3><p>Panels fold away for deep writing and return for review. Space follows the task, not a fixed template.</p></div>
+          <div class="card"><h3>Role-aware defaults</h3><p>A first-time author sees the rails; a power user gets the document maximised. Same architecture, different opening posture.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 16 DESIGN SYSTEM ============ -->
+    <section class="page" id="p16">
+      <div class="inner">
+        <div class="eyebrow">Design system <span class="pg">16 / 21</span></div>
+        <h1 class="title">A restrained system that lets state do the talking.</h1>
+        <p class="lead">Built on shadcn/ui and Tailwind with an 8-pt rhythm. Neutral surfaces, one brand indigo, one Merlin violet, and a disciplined semantic scale for risk — so colour always means something.</p>
+        <div class="split" style="margin-top:28px">
+          <div>
+            <p class="kicker">Colour — semantic, not decorative</p>
+            <div class="swatches" style="margin-bottom:24px">
+              <div class="sw"><div class="box" style="background:var(--indigo)"></div><div class="lab">Brand · indigo</div></div>
+              <div class="sw"><div class="box" style="background:var(--merlin)"></div><div class="lab">Merlin · AI</div></div>
+              <div class="sw"><div class="box" style="background:var(--crit)"></div><div class="lab">Risk · high</div></div>
+              <div class="sw"><div class="box" style="background:var(--warn)"></div><div class="lab">Risk · med</div></div>
+              <div class="sw"><div class="box" style="background:var(--ok)"></div><div class="lab">Approved</div></div>
+              <div class="sw"><div class="box" style="background:var(--surface-2)"></div><div class="lab">Surface</div></div>
+            </div>
+            <p class="kicker">Status &amp; risk components</p>
+            <div class="chips" style="margin-bottom:10px">
+              <span class="chip ok"><span class="dot"></span> Approved</span>
+              <span class="chip"><span class="dot" style="background:var(--muted)"></span> Standard</span>
+              <span class="chip warn"><span class="dot"></span> Modified</span>
+              <span class="chip crit"><span class="dot"></span> At risk</span>
+              <span class="chip merlin"><span class="dot"></span> AI-drafted</span>
+              <span class="chip crit"><span class="dot"></span> Non-standard</span>
+            </div>
+            <p class="muted" style="font-size:13px">Confidence meters, health rings and risk stripes reuse the same scale, so a colour learned once reads everywhere.</p>
+          </div>
+          <div>
+            <p class="kicker">Type scale</p>
+            <div class="typescale">
+              <div><span class="tag">Display</span><span style="font-family:var(--font-display);font-size:26px;font-weight:600">Contract authoring</span></div>
+              <div><span class="tag">Heading</span><span style="font-size:18px;font-weight:650">Payment Terms</span></div>
+              <div><span class="tag">Body</span><span style="font-size:15px">Net 45 within invoice date.</span></div>
+              <div><span class="tag">Label · mono</span><span style="font-family:var(--font-mono);font-size:12px;letter-spacing:.06em">CONFIDENCE 97%</span></div>
+            </div>
+            <p class="kicker" style="margin-top:22px">Foundations</p>
+            <ul class="clean">
+              <li><strong>Spacing</strong> — 8-pt grid, radius 10px, soft elevation</li>
+              <li><strong>Components</strong> — buttons, badges, cards, tables, forms, tabs, toasts, switches</li>
+              <li><strong>AI components</strong> — suggestion card, confidence meter, streaming draft, diff/compare</li>
+              <li><strong>Theming</strong> — full light/dark via design tokens; oklch colour space</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 17 ACCESSIBILITY ============ -->
+    <section class="page" id="p17">
+      <div class="inner">
+        <div class="eyebrow">Accessibility <span class="pg">17 / 21</span></div>
+        <h1 class="title">Enterprise means everyone, on every input, at any zoom.</h1>
+        <p class="lead">Legal and procedural work is often done under deadline, on locked-down machines, by people using keyboards and screen readers. Accessibility here is table stakes, not polish.</p>
+        <div class="grid g3" style="margin-top:28px">
+          <div class="card"><h3>Keyboard-first</h3><p>Every action — swap a clause, apply a fix, route for approval — is reachable and operable without a mouse, with visible focus states throughout.</p></div>
+          <div class="card"><h3>Screen-reader semantics</h3><p>Panels, tabs, dialogs and toasts use proper roles and labels; risk and status are announced as text, never colour alone.</p></div>
+          <div class="card"><h3>Contrast &amp; colour independence</h3><p>Targets WCAG AA. Risk is a stripe <em>and</em> a label <em>and</em> a colour — so it survives colour-blindness and greyscale printing.</p></div>
+          <div class="card"><h3>Zoom &amp; reflow</h3><p>Layout reflows to 200% without loss; panels collapse gracefully so the document is never trapped behind chrome.</p></div>
+          <div class="card"><h3>Error prevention</h3><p>Consequential actions confirm; nothing legal changes silently; undo and audit history make mistakes recoverable.</p></div>
+          <div class="card"><h3>Large documents</h3><p>Outline navigation, virtualization and jump-to-clause keep a 300-page agreement usable, not a scroll of despair.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 18 EDGE CASES ============ -->
+    <section class="page" id="p18">
+      <div class="inner">
+        <div class="eyebrow">Edge cases <span class="pg">18 / 21</span></div>
+        <h1 class="title">The enterprise lives in the exceptions.</h1>
+        <p class="lead">A demo handles the happy path; a product survives the real one. These are designed states, not afterthoughts — each with a defined, non-blocking response.</p>
+        <div class="grid g3" style="margin-top:28px">
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--warn)"></span> Metadata</h4><ul>
+            <li><b>Currency mismatch</b> — USD value in an India deal → <span class="m">flag &amp; one-click fix</span></li>
+            <li><b>Missing jurisdiction / signer</b> — marked, never blocks progress</li>
+            <li><b>Duplicate supplier</b> — matched to master, linked not re-created</li>
+          </ul></div>
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--merlin)"></span> AI</h4><ul>
+            <li><b>Low confidence</b> — surfaced as uncertain, human decides</li>
+            <li><b>Hallucination guard</b> — every claim cites a basis</li>
+            <li><b>Service down</b> — authoring continues; AI degrades gracefully</li>
+          </ul></div>
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--crit)"></span> Risk &amp; legal</h4><ul>
+            <li><b>Non-standard clause</b> — Net 90, capped indemnity flagged vs. playbook</li>
+            <li><b>Missing mandatory clause</b> — DPA / insurance suggested &amp; draftable</li>
+            <li><b>Custom clause</b> — auto-routes to legal for sign-off</li>
+          </ul></div>
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--ok)"></span> Approval</h4><ul>
+            <li><b>Approver on leave</b> — offer a delegate, avoid the bottleneck</li>
+            <li><b>Chain unavailable</b> — predict &amp; surface before routing</li>
+            <li><b>Not ready</b> — health gate explains what's missing</li>
+          </ul></div>
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></span> Performance &amp; offline</h4><ul>
+            <li><b>300-page contract</b> — outline + virtualization</li>
+            <li><b>Slow network</b> — optimistic UI, auto-save</li>
+            <li><b>Offline edits</b> — queued, reconciled on reconnect</li>
+          </ul></div>
+          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--faint)"></span> People &amp; permissions</h4><ul>
+            <li><b>Read-only users</b> — clear, non-punitive state</li>
+            <li><b>Concurrent editing</b> — presence + version conflict handling</li>
+            <li><b>Unsaved changes</b> — protected on navigate away</li>
+          </ul></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 19 METRICS ============ -->
+    <section class="page" id="p19">
+      <div class="inner">
+        <div class="eyebrow">Success metrics <span class="pg">19 / 21</span></div>
+        <h1 class="title">How I'd know it worked.</h1>
+        <p class="lead">A redesign that can't be measured is just an opinion. These are the signals I'd instrument, each tied back to the decision-confidence thesis.</p>
+        <div class="grid g4" style="margin-top:28px">
+          <div class="stat"><div class="n">↓</div><div class="l">Authoring time</div><div class="d">Intake + auto-metadata remove duplicate entry</div></div>
+          <div class="stat"><div class="n">↓</div><div class="l">Clicks to approval-ready</div><div class="d">Fewer hand-offs, guided lead-in</div></div>
+          <div class="stat"><div class="n">↑</div><div class="l">First-pass approval rate</div><div class="d">Health gate catches gaps pre-submit</div></div>
+          <div class="stat"><div class="n">↓</div><div class="l">Legal review effort</div><div class="d">Attention focused on real deviations</div></div>
+          <div class="stat"><div class="n">↓</div><div class="l">Metadata errors</div><div class="d">Single source, confidence-flagged fields</div></div>
+          <div class="stat"><div class="n">↑</div><div class="l">Policy compliance</div><div class="d">Risk surfaced at the moment of writing</div></div>
+          <div class="stat"><div class="n">↑</div><div class="l">AI suggestion accept rate</div><div class="d">A proxy for earned trust</div></div>
+          <div class="stat"><div class="n">↑</div><div class="l">Approval readiness at submit</div><div class="d">Health score ≥ threshold</div></div>
+        </div>
+        <div class="note"><b>Honest framing —</b> arrows show intended direction, not measured results. In a real engagement I'd baseline current cycle time and rework, then A/B the guided flow and the health gate against the legacy path.</div>
+      </div>
+    </section>
+
+    <!-- ============ 20 FUTURE ============ -->
+    <section class="page" id="p20">
+      <div class="inner">
+        <div class="eyebrow">Future opportunities <span class="pg">20 / 21</span></div>
+        <h1 class="title">Where an AI-native CLM goes next.</h1>
+        <p class="lead">The workspace is the platform. Once authoring is trustworthy, the same context — clause, supplier, policy, history — powers a much larger surface.</p>
+        <div class="grid g4" style="margin-top:28px">
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M2 12h20"/></svg></div><h3>Negotiation AI</h3><p>Predict counterparty positions and suggest fallbacks live during redlining.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3zM5 11a7 7 0 0 0 14 0M12 18v4"/></svg></div><h3>Voice authoring</h3><p>Draft and dictate clauses hands-free for field and mobile procurement.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 8h14M5 12h14M5 16h9"/></svg></div><h3>Multilingual</h3><p>Author, translate and reconcile bilingual contracts with clause parity.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20V10M10 20V4M16 20v-6M22 20H2"/></svg></div><h3>Portfolio intelligence</h3><p>Roll clause-level risk up to a portfolio view for category and legal leaders.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div><h3>Obligation management</h3><p>Turn authored obligations into tracked, alerting commitments post-signature.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9M3 3v6h6"/></svg></div><h3>Renewals</h3><p>Proactive renewal drafting from prior terms and current market benchmarks.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg></div><h3>Copilot actions</h3><p>Let Merlin execute multi-step tasks — with preview and approval — not just advise.</p></div>
+          <div class="card"><div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 20h16M4 20V8m6 12V4m6 16v-8"/></svg></div><h3>Analytics</h3><p>Cycle-time, deviation and negotiation dashboards that close the improvement loop.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 21 REFLECTION ============ -->
+    <section class="page" id="p21">
+      <div class="inner">
+        <div class="eyebrow">Reflection <span class="pg">21 / 21</span></div>
+        <h1 class="title">What I'd defend, and what I'd do with more time.</h1>
+        <div class="split" style="margin-top:28px">
+          <div>
+            <p class="kicker">Trade-offs I made on purpose</p>
+            <p>I chose <strong>depth on one flow over breadth across many</strong>. The Purchase Agreement was picked deliberately — it exercises nearly every CLM capability, so getting it right proves the model. A shallower tour of five contract types would have looked bigger and taught less.</p>
+            <p>I also chose to make Merlin <strong>proactive but never autonomous</strong>. That's slower than a fully automated draft, and I'd defend it every time — in a legal document, an un-checkable answer is a liability, not a feature.</p>
+            <p class="kicker" style="margin-top:22px">What I'd improve with more time</p>
+            <ul class="clean">
+              <li>Real user research — this sprint used heuristic and competitive analysis; I'd validate the health-gate and Merlin's tone with actual procurement and legal users</li>
+              <li>The negotiation loop — importing and reconciling third-party redlines deserves its own deep design pass</li>
+              <li>Instrumented metrics — baseline the legacy flow and prove the confidence thesis with numbers</li>
+            </ul>
+          </div>
+          <div>
+            <div class="pull">If it can't be checked, it can't be trusted — and an enterprise contract that isn't trusted is just a faster way to create risk.<small>What I learned</small></div>
+            <p class="kicker" style="margin-top:14px">How this scales globally</p>
+            <p class="muted" style="font-size:14px">The playbook-driven model is inherently localizable: swap the jurisdiction, policy set and clause library, and the same workspace serves a different legal regime. Merlin's citations make that localization auditable — every suggestion points at the rule it came from.</p>
+          </div>
+        </div>
+        <div class="card merlin" style="margin-top:30px;display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+          <div style="flex:1;min-width:240px">
+            <h3 style="font-family:var(--font-display);font-size:20px;font-weight:600">Now — walk into the prototype.</h3>
+            <p style="color:var(--ink-soft);font-size:14.5px;margin-top:6px">You've seen the thinking. The clickable prototype puts you in Jitendra's seat: intake with Merlin, resolve a Net 90 risk, watch the health score move, and route for approval.</p>
+          </div>
+          <div class="chips">
+            <span class="chip merlin"><span class="dot"></span> React + shadcn/ui</span>
+            <span class="chip">Live &amp; clickable</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="footer">Zycus iContract · UX Case Study · Redesigning Contract Authoring — story before screens</div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var root = document.documentElement;
+    function currentTheme() {
+      return root.getAttribute('data-theme') ||
+        (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    }
+    function toggle() {
+      var next = currentTheme() === 'dark' ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+    }
+    var b1 = document.getElementById('themeBtn');
+    var b2 = document.getElementById('themeBtnM');
+    if (b1) b1.addEventListener('click', toggle);
+    if (b2) b2.addEventListener('click', toggle);
+
+    // scroll reveal
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.page .inner > *').forEach(function (el, i) {
+      if (i === 0) return; el.classList.add('reveal'); io.observe(el);
+    });
+
+    // active nav + top progress
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail-link'));
+    var sections = links.map(function (l) { return document.querySelector(l.getAttribute('href')); });
+    var ptop = document.getElementById('ptop');
+    function onScroll() {
+      var y = window.scrollY + window.innerHeight * 0.35;
+      var idx = 0;
+      for (var i = 0; i < sections.length; i++) { if (sections[i] && sections[i].offsetTop <= y) idx = i; }
+      links.forEach(function (l, i) { l.classList.toggle('active', i === idx); });
+      if (ptop) {
+        var h = document.body.scrollHeight - window.innerHeight;
+        ptop.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+      }
+    }
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>
+</body></html>
