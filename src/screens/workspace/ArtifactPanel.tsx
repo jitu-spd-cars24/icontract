@@ -4,16 +4,18 @@ import { MerlinMark, ClauseStatusBadge } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { CONTRACT } from "@/lib/data";
-import { FileText, PanelRightClose, ShieldCheck, Check } from "lucide-react";
+import { FileText, PanelRightClose, ShieldCheck, Check, Eye } from "lucide-react";
 
 export function ArtifactPanel({
   onClose,
   onAskAbout,
   onSubmit,
+  onPreview,
 }: {
   onClose: () => void;
   onAskAbout: (label: string) => void;
   onSubmit: () => void;
+  onPreview?: () => void;
 }) {
   const { clauses, metadata, insights, isBlank, intakeMode } = useStore();
   const health = useHealth();
@@ -41,6 +43,13 @@ export function ArtifactPanel({
             {isBlank ? "Artifact · draft" : `${CONTRACT.id} · draft`}
           </div>
         </div>
+        {onPreview && (
+          <Tooltip content="Preview full contract" side="left">
+            <button onClick={onPreview} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Preview contract">
+              <Eye className="size-4" />
+            </button>
+          </Tooltip>
+        )}
         <Tooltip content="Hide artifact" side="left">
           <button onClick={onClose} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Hide artifact">
             <PanelRightClose className="size-4" />
@@ -140,10 +149,18 @@ export function ArtifactPanel({
         )}
       </div>
 
-      <div className="border-t border-border p-3">
+      <div className="flex gap-2 border-t border-border p-3">
+        {onPreview && (
+          <button
+            onClick={onPreview}
+            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          >
+            <Eye className="size-4" /> Preview
+          </button>
+        )}
         <button
           onClick={onSubmit}
-          className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
           <ShieldCheck className="size-4" /> Submit for approval
         </button>

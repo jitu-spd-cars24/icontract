@@ -6,12 +6,13 @@ import { useHealth } from "./workspace/LeftRail";
 import { MerlinChat } from "./workspace/MerlinChat";
 import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
+import { ContractPreview } from "./workspace/ContractPreview";
 import { RECENT_CONTRACTS, DASH_RECS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
 import type { RiskLevel } from "@/lib/types";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight, LayoutGrid,
-  CheckSquare, Building2, TrendingUp,
+  CheckSquare, Building2, TrendingUp, Eye,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -28,6 +29,7 @@ export function NextGenWorkspace() {
   const [showStart, setShowStart] = React.useState(false);
   const [artifactOpen, setArtifactOpen] = React.useState(true);
   const [showApproval, setShowApproval] = React.useState(false);
+  const [showPreview, setShowPreview] = React.useState(false);
   const [homeInput, setHomeInput] = React.useState("");
 
   function beginSession(name: string) {
@@ -107,7 +109,10 @@ export function NextGenWorkspace() {
               <div className="truncate text-sm font-semibold leading-tight">{title}</div>
               <div className="truncate text-[11px] text-muted-foreground leading-tight">Health {health.score}/100</div>
             </div>
-            <div className="ml-auto">
+            <div className="ml-auto flex items-center gap-1.5">
+              <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
+                <Eye className="size-3.5" /> Preview contract
+              </Button>
               <Tooltip content={artifactOpen ? "Hide artifact" : "Show artifact"} side="left">
                 <button onClick={() => setArtifactOpen((o) => !o)} className="grid size-9 place-items-center rounded-lg border border-border text-muted-foreground hover:bg-accent" aria-label="Toggle artifact">
                   {artifactOpen ? <PanelRightClose className="size-4" /> : <PanelRightOpen className="size-4" />}
@@ -126,11 +131,12 @@ export function NextGenWorkspace() {
 
       {/* ===== RIGHT ARTIFACT ===== */}
       {view === "chat" && artifactOpen && (
-        <ArtifactPanel onClose={() => setArtifactOpen(false)} onAskAbout={() => { /* handled inside chat */ }} onSubmit={() => setShowApproval(true)} />
+        <ArtifactPanel onClose={() => setArtifactOpen(false)} onPreview={() => setShowPreview(true)} onAskAbout={() => { /* handled inside chat */ }} onSubmit={() => setShowApproval(true)} />
       )}
 
       {showStart && <StartModal onClose={() => setShowStart(false)} onPick={startWith} />}
       {showApproval && <ApprovalModal onClose={() => setShowApproval(false)} />}
+      {showPreview && <ContractPreview onClose={() => setShowPreview(false)} />}
     </div>
   );
 }
