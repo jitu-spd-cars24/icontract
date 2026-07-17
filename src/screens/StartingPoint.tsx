@@ -72,13 +72,12 @@ const OPTIONS: Option[] = [
 ];
 
 export function StartingPoint() {
-  const { go, startBlank, startMerlinIntake } = useStore();
+  const { go, startBlank } = useStore();
 
   function choose(o: Option) {
     if (o.id === "blank") return startBlank();
     if (o.id === "duplicate") return go("duplicate");
-    if (o.id === "merlin") return startMerlinIntake();
-    go(o.go);
+    go(o.go); // merlin → "intake" (guided screen), template/import → their screens
   }
 
   return (
@@ -154,7 +153,7 @@ export function StartingPoint() {
             <strong className="font-medium text-foreground">Not sure?</strong> Merlin
             Intake is fastest for a first draft and you keep full editing control after.
           </span>
-          <Button size="sm" variant="merlin" className="ml-auto" onClick={() => startMerlinIntake()}>
+          <Button size="sm" variant="merlin" className="ml-auto" onClick={() => go("intake")}>
             <Sparkles className="size-4" /> Start with Merlin
           </Button>
         </div>

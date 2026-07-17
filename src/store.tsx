@@ -32,6 +32,8 @@ export interface NewClause {
 }
 
 interface Store {
+  appMode: "chooser" | "traditional" | "nextgen";
+  setAppMode: (m: "chooser" | "traditional" | "nextgen") => void;
   step: FlowStep;
   go: (s: FlowStep) => void;
   theme: "light" | "dark";
@@ -113,6 +115,7 @@ const SCAFFOLD: NewClause[] = [
 ];
 
 export function StoreProvider({ children }: { children: React.ReactNode }) {
+  const [appMode, setAppMode] = React.useState<"chooser" | "traditional" | "nextgen">("chooser");
   const [step, setStep] = React.useState<FlowStep>("dashboard");
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
   const [clauses, setClauses] = React.useState<Clause[]>(CLAUSES);
@@ -548,6 +551,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   );
 
   const value: Store = {
+    appMode,
+    setAppMode,
     step,
     go: setStep,
     theme,

@@ -1,10 +1,10 @@
 import { Logo } from "@/components/shared";
 import { Button, Avatar, Tooltip } from "@/components/ui/primitives";
 import { useStore } from "@/store";
-import { Moon, Sun, Bell, Search, HelpCircle } from "lucide-react";
+import { Moon, Sun, Bell, Search, HelpCircle, Sparkles } from "lucide-react";
 
 export function TopBar({ onNew }: { onNew?: () => void }) {
-  const { theme, toggleTheme, go } = useStore();
+  const { theme, toggleTheme, go, setAppMode } = useStore();
   return (
     <header className="sticky top-0 z-40 flex h-14 items-center gap-4 border-b border-border bg-card/80 px-4 backdrop-blur-md">
       <button
@@ -43,6 +43,12 @@ export function TopBar({ onNew }: { onNew?: () => void }) {
           ⌘K
         </kbd>
       </div>
+
+      <Tooltip content="Try the NextGen AI experience">
+        <Button variant="outline" size="sm" onClick={() => setAppMode("nextgen")} className="hidden md:inline-flex">
+          <Sparkles className="size-3.5 text-merlin" /> NextGen AI
+        </Button>
+      </Tooltip>
 
       {onNew && (
         <Button size="sm" onClick={onNew} className="hidden sm:inline-flex">
