@@ -4,7 +4,7 @@ import { MerlinMark, RiskDot } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { CONTRACT, INSIGHTS } from "@/lib/data";
-import { Send, Sparkles, Check } from "lucide-react";
+import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X } from "lucide-react";
 
 interface Card {
   kind: "risk" | "missing";
@@ -15,11 +15,30 @@ interface Card {
   confidence?: number;
   done?: boolean;
 }
+interface Attachment {
+  name: string;
+  kind: "image" | "pdf" | "doc" | "file";
+  size: string;
+}
 interface Msg {
   id: string;
   role: "merlin" | "user";
   text?: string;
   cards?: Card[];
+  files?: Attachment[];
+}
+
+function fileKind(name: string, type: string): Attachment["kind"] {
+  if (type.startsWith("image/") || /\.(png|jpe?g|gif|webp|heic)$/i.test(name)) return "image";
+  if (type === "application/pdf" || /\.pdf$/i.test(name)) return "pdf";
+  if (/\.(docx?|rtf|txt)$/i.test(name)) return "doc";
+  return "file";
+}
+function humanSize(bytes: number): string {
+  if (!bytes) return "";
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 let seq = 0;
@@ -93,7 +112,28 @@ export function MerlinChat({
   const [typing, setTyping] = React.useState(false);
   const [phase, setPhase] = React.useState<"intake" | "ready" | "authoring">("authoring");
   const [step, setStep] = React.useState(0);
+  const [attachments, setAttachments] = React.useState<Attachment[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const fileRef = React.useRef<HTMLInputElement>(null);
+
+  function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files ?? []);
+    if (files.length) {
+      setAttachments((prev) => [
+        ...prev,
+        ...files.map((f) => ({ name: f.name, kind: fileKind(f.name, f.type), size: humanSize(f.size) })),
+      ]);
+    }
+    e.target.value = "";
+  }
+  function ackFiles(files: Attachment[]): string {
+    const hasContract = files.some((f) => f.kind === "pdf" || f.kind === "doc");
+    const hasImage = files.some((f) => f.kind === "image");
+    const first = files[0]?.name;
+    if (hasContract) return `Thanks — I've read ${files.length > 1 ? `${files.length} files` : first}, extracted the parties, dates and commercial terms into the artifact, and mapped the clauses. Want me to flag deviations against your playbook?`;
+    if (hasImage) return `Got ${files.length > 1 ? `${files.length} images` : first}. I ran OCR and pulled the text — I can attach it as an exhibit or extract terms from it. Which would you like?`;
+    return `Attached ${files.length > 1 ? `${files.length} files` : first} to this contract. I'll reference them where relevant.`;
+  }
 
   function findingCards(): Card[] {
     const r = insights.filter((i) => !i.resolved && i.type === "risk");
@@ -191,12 +231,19 @@ export function MerlinChat({
 
   function send(text: string) {
     const v = text.trim();
-    if (!v) return;
-    push({ id: uid(), role: "user", text: v });
+    const files = attachments;
+    if (!v && files.length === 0) return;
+    push({ id: uid(), role: "user", text: v || undefined, files: files.length ? files : undefined });
     setDraft("");
+    setAttachments([]);
+    // Files always get an acknowledgement first
+    if (files.length) {
+      merlinReply(ackFiles(files));
+      if (!v) return;
+    }
     if (phase === "ready" && /generate|draft|yes|go ahead|do it|ready/i.test(v)) return doGenerate();
     if (phase === "intake") return handleIntakeAnswer(v);
-    process(v);
+    if (v) process(v);
   }
 
   // Adaptive chips — always suggest what to do next
@@ -250,8 +297,19 @@ export function MerlinChat({
                 </div>
               </div>
             ) : (
-              <div key={m.id} className="mb-6 flex justify-end animate-in-up">
-                <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-primary-foreground">{m.text}</div>
+              <div key={m.id} className="mb-6 flex flex-col items-end gap-1.5 animate-in-up">
+                {m.files && (
+                  <div className="flex max-w-[80%] flex-wrap justify-end gap-1.5">
+                    {m.files.map((f, i) => (
+                      <span key={i} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-2.5 py-1.5 text-[12.5px]">
+                        {f.kind === "image" ? <ImageIcon className="size-3.5 text-merlin" /> : <FileText className="size-3.5 text-merlin" />}
+                        <span className="max-w-[160px] truncate font-medium">{f.name}</span>
+                        {f.size && <span className="text-[11px] text-muted-foreground">{f.size}</span>}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                {m.text && <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-primary-foreground">{m.text}</div>}
               </div>
             )
           )}
@@ -273,16 +331,41 @@ export function MerlinChat({
               <button key={s} onClick={() => send(s)} className="rounded-full border border-border bg-card px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:border-merlin-border hover:text-foreground">{s}</button>
             ))}
           </div>
-          <div className="flex items-end gap-2 rounded-2xl border border-input bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
-            <textarea
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft); } }}
-              rows={1}
-              placeholder="Ask Merlin to draft, fix, explain, or check readiness…"
-              className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-2 py-1.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground scrollbar-thin"
-            />
-            <Button size="icon" onClick={() => send(draft)} disabled={!draft.trim()} aria-label="Send"><Send className="size-4" /></Button>
+          <div className="rounded-2xl border border-input bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
+            {/* attachment preview */}
+            {attachments.length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-1.5 px-1">
+                {attachments.map((f, i) => (
+                  <span key={i} className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-background px-2 py-1 text-[12px]">
+                    {f.kind === "image" ? <ImageIcon className="size-3.5 text-merlin" /> : <FileText className="size-3.5 text-merlin" />}
+                    <span className="max-w-[140px] truncate font-medium">{f.name}</span>
+                    <button onClick={() => setAttachments((prev) => prev.filter((_, j) => j !== i))} className="text-muted-foreground hover:text-foreground" aria-label={`Remove ${f.name}`}>
+                      <X className="size-3" />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <div className="flex items-end gap-2">
+              <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.rtf,.txt" className="hidden" onChange={onPickFiles} />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                aria-label="Attach image or PDF"
+                title="Attach image or PDF"
+              >
+                <Paperclip className="size-4" />
+              </button>
+              <textarea
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft); } }}
+                rows={1}
+                placeholder="Ask Merlin, or attach a contract, image or PDF…"
+                className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-1 py-1.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground scrollbar-thin"
+              />
+              <Button size="icon" onClick={() => send(draft)} disabled={!draft.trim() && attachments.length === 0} aria-label="Send"><Send className="size-4" /></Button>
+            </div>
           </div>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">Merlin acts on your contract — it never changes legal terms without your confirmation.</div>
         </div>
