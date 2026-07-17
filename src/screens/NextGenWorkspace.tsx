@@ -1,15 +1,17 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
-import { Logo, MerlinMark } from "@/components/shared";
+import { Logo, MerlinMark, SectionLabel, RISK_META } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./workspace/LeftRail";
 import { MerlinChat } from "./workspace/MerlinChat";
 import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
-import { RECENT_CONTRACTS } from "@/lib/data";
+import { RECENT_CONTRACTS, DASH_RECS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
+import type { RiskLevel } from "@/lib/types";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight, LayoutGrid,
+  CheckSquare, Building2, TrendingUp,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -138,6 +140,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onDraftMerlin, the
   input: string; setInput: (v: string) => void; onSubmit: () => void; onNew: () => void;
   onOpen: (name: string) => void; onDraftMerlin: () => void; theme: string; toggleTheme: () => void;
 }) {
+  const { toast } = useStore();
   return (
     <div className="flex-1 overflow-y-auto scrollbar-thin">
       {/* mobile top bar */}
@@ -145,7 +148,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onDraftMerlin, the
         <Logo /><Badge tone="merlin" className="ml-auto">NextGen AI</Badge>
         <button onClick={toggleTheme} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent">{theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}</button>
       </div>
-      <div className="mx-auto max-w-3xl px-6 py-10">
+      <div className="mx-auto max-w-5xl px-6 py-10">
         <div className="flex flex-col items-center text-center">
           <MerlinMark size={48} />
           <h1 className="mt-4 text-2xl font-semibold tracking-tight">Good afternoon, Jitendra</h1>
@@ -172,31 +175,116 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onDraftMerlin, the
           </div>
         </div>
 
-        {/* created contracts */}
-        <div className="mt-12">
-          <div className="mb-3 flex items-center justify-between">
-            <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Your contracts</span>
-            <button onClick={onNew} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"><Plus className="size-3.5" /> New contract</button>
+        {/* Merlin daily briefing */}
+        <div className="mt-10 overflow-hidden rounded-2xl border border-merlin-border">
+          <div className="bg-merlin-soft/60 p-4">
+            <div className="flex items-center gap-2">
+              <MerlinMark size={30} />
+              <span className="text-sm font-semibold">Merlin — your daily briefing</span>
+              <Badge tone="merlin"><Sparkles className="size-3" /> Proactive</Badge>
+            </div>
+            <p className="mt-1.5 text-[13.5px] text-muted-foreground">I reviewed your active portfolio this morning. Here's what needs a decision.</p>
+            <div className="mt-3 grid gap-2 sm:grid-cols-3">
+              {DASH_RECS.map((r) => (
+                <button key={r.id} onClick={onNew} className="flex items-start gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-merlin-border">
+                  <span className="mt-1 size-2 shrink-0 rounded-full" style={{ background: r.tone === "high" ? "var(--risk-high)" : r.tone === "warning" ? "var(--risk-med)" : "var(--info)" }} />
+                  <span className="min-w-0">
+                    <span className="block text-[12.5px] font-medium">{r.title}</span>
+                    <span className="mt-0.5 block text-[11px] text-muted-foreground">{r.detail}</span>
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {RECENT_CONTRACTS.map((c) => (
-              <button key={c.id} onClick={() => onOpen(c.title.split(" — ")[0])} className="group rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:shadow-sm">
-                <div className="flex items-start gap-3">
-                  <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
-                  <div className="min-w-0 flex-1">
-                    <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <span className="font-mono">{c.id}</span><span>·</span><span>{c.value}</span>
+        </div>
+
+        {/* contracts + right rail */}
+        <div className="mt-8 grid gap-6 lg:grid-cols-3">
+          {/* contracts */}
+          <div className="lg:col-span-2">
+            <div className="mb-3 flex items-center justify-between">
+              <SectionLabel>Your contracts</SectionLabel>
+              <button onClick={onNew} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"><Plus className="size-3.5" /> New contract</button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              {RECENT_CONTRACTS.map((c) => (
+                <button key={c.id} onClick={() => onOpen(c.title.split(" — ")[0])} className="group rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:shadow-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
+                    <div className="min-w-0 flex-1">
+                      <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
+                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                        <span className="font-mono">{c.id}</span><span>·</span><span>{c.value}</span>
+                      </div>
+                    </div>
+                    <Badge tone={c.status === "Signed" ? "low" : c.status === "Draft" ? "med" : "primary"}>{c.status}</Badge>
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <span className="text-[11px] text-muted-foreground">Health {c.health}%</span>
+                    <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">Open chat <ArrowRight className="size-3.5" /></span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* right rail */}
+          <div className="space-y-6">
+            {/* waiting on you */}
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <CheckSquare className="size-4 text-muted-foreground" />
+                <SectionLabel>Waiting on you</SectionLabel>
+                <Badge tone="high" className="ml-auto">{PENDING_APPROVALS.length}</Badge>
+              </div>
+              <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                {PENDING_APPROVALS.map((a) => (
+                  <div key={a.id} className="p-3">
+                    <div className="text-sm font-medium leading-snug">{a.title}</div>
+                    <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span>{a.stage}</span><span>{a.from} · {a.waiting}</span>
+                    </div>
+                    <div className="mt-2 flex gap-2">
+                      <Button size="sm" variant="success" className="h-7" onClick={() => toast({ title: "Approved", detail: a.title, tone: "success" })}>Approve</Button>
+                      <Button size="sm" variant="outline" className="h-7" onClick={() => onOpen(a.title.split(" — ")[0])}>Review</Button>
                     </div>
                   </div>
-                  <Badge tone={c.status === "Signed" ? "low" : c.status === "Draft" ? "med" : "primary"}>{c.status}</Badge>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Health {c.health}%</span>
-                  <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">Open chat <ArrowRight className="size-3.5" /></span>
-                </div>
-              </button>
-            ))}
+                ))}
+              </div>
+            </div>
+
+            {/* recent suppliers */}
+            <div>
+              <div className="mb-3 flex items-center gap-2">
+                <Building2 className="size-4 text-muted-foreground" />
+                <SectionLabel>Recent suppliers</SectionLabel>
+              </div>
+              <div className="divide-y divide-border rounded-xl border border-border bg-card">
+                {RECENT_SUPPLIERS.map((s) => (
+                  <div key={s.name} className="flex items-center gap-3 p-3">
+                    <div className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-primary">{s.name.slice(0, 2).toUpperCase()}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium">{s.name}</div>
+                      <div className="text-[11px] text-muted-foreground">{s.contracts} contracts · {s.region}</div>
+                    </div>
+                    <Badge tone={RISK_META[s.risk as RiskLevel].tone}>{s.risk}</Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* cycle time */}
+            <div className="rounded-xl border border-border bg-card p-4">
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <TrendingUp className="size-4" />
+                <span className="text-xs font-medium">Cycle time this quarter</span>
+              </div>
+              <div className="mt-2 flex items-baseline gap-2">
+                <span className="text-2xl font-semibold tabular-nums">6.2</span>
+                <span className="text-sm text-muted-foreground">days avg</span>
+                <Badge tone="low" className="ml-auto">↓ 38% with Merlin</Badge>
+              </div>
+            </div>
           </div>
         </div>
       </div>
