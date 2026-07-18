@@ -294,40 +294,37 @@ export function MerlinChat({
                     </div>
                   )}
                   {m.cards && (
-                    <div className="mt-3 space-y-2">
+                    <div className="mt-3 space-y-2.5">
                       {m.cards.map((c) => {
                         const isRisk = c.kind === "risk";
                         return (
-                          <div key={c.refId} className={`animate-in-up overflow-hidden rounded-2xl border bg-card shadow-xs ${isRisk ? "border-risk-high/25" : "border-risk-med/25"}`}>
-                            {/* severity accent rail */}
-                            <div className="flex">
-                              <span className="w-1 shrink-0" style={{ background: isRisk ? "var(--risk-high)" : "var(--risk-med)" }} />
-                              <div className="min-w-0 flex-1 p-3.5">
-                                <div className="flex items-center gap-2">
-                                  <span className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[10.5px] font-semibold uppercase tracking-wide ${isRisk ? "bg-risk-high-soft text-risk-high" : "bg-risk-med-soft text-risk-med"}`}>
-                                    {isRisk ? <ShieldAlert className="size-3" /> : <FilePlus2 className="size-3" />}
-                                    {isRisk ? "Policy risk" : "Missing clause"}
+                          <div key={c.refId} className="group animate-in-up rounded-[18px] border border-border/60 bg-card p-5 shadow-xs transition-shadow duration-200 hover:shadow-sm">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${isRisk ? "bg-risk-high-soft text-risk-high" : "bg-risk-med-soft text-risk-med"}`}>
+                                {isRisk ? <ShieldAlert className="size-3.5" /> : <FilePlus2 className="size-3.5" />}
+                                {isRisk ? "Policy risk" : "Missing clause"}
+                              </span>
+                              {c.confidence != null && (
+                                <span className="inline-flex items-center gap-2" title="How confident Merlin is in this finding">
+                                  <span className="hidden text-[11px] font-medium text-muted-foreground sm:inline">Confidence</span>
+                                  <span className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
+                                    <span className="block h-full rounded-full bg-foreground/35" style={{ width: `${c.confidence}%` }} />
                                   </span>
-                                  {c.confidence != null && (
-                                    <span className="ml-auto inline-flex items-center gap-1.5" title="How confident Merlin is in this finding">
-                                      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">Confidence</span>
-                                      <ConfidenceMeter value={c.confidence} />
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="mt-2 text-[14.5px] font-semibold leading-snug">{c.title}</div>
-                                <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">{c.detail}</p>
-                                <div className="mt-1.5 text-[11px] text-muted-foreground">Basis · {c.basis}</div>
-                                <div className="mt-3">
-                                  {c.done ? (
-                                    <span className="inline-flex items-center gap-1 text-[12.5px] font-medium text-success"><Check className="size-3.5" /> {isRisk ? "Resolved" : "Added to draft"}</span>
-                                  ) : (
-                                    <Button size="sm" variant={isRisk ? "default" : "merlin"} className="h-8" onClick={() => handleCard(c)}>
-                                      {isRisk ? <Check className="size-3.5" /> : <Sparkles className="size-3.5" />} {isRisk ? "Apply the fix" : "Draft & add clause"}
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
+                                  <span className="text-[12px] font-semibold tabular-nums text-foreground/70">{c.confidence}%</span>
+                                </span>
+                              )}
+                            </div>
+                            <h4 className="mt-3.5 text-[16px] font-semibold leading-snug tracking-[-0.01em]">{c.title}</h4>
+                            <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{c.detail}</p>
+                            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/75">Basis · {c.basis}</p>
+                            <div className="mt-4">
+                              {c.done ? (
+                                <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-success"><Check className="size-4" /> {isRisk ? "Resolved" : "Added to draft"}</span>
+                              ) : (
+                                <Button size="sm" variant={isRisk ? "default" : "merlin"} className="h-9 rounded-full px-4" onClick={() => handleCard(c)}>
+                                  {isRisk ? <Check className="size-4" /> : <Sparkles className="size-4" />} {isRisk ? "Apply the fix" : "Draft & add clause"}
+                                </Button>
+                              )}
                             </div>
                           </div>
                         );
