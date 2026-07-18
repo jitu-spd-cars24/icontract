@@ -162,26 +162,18 @@ export function ArtifactPanel({
         )}
       </div>
 
-      <div className="flex gap-2 border-t border-border p-3">
-        {onPreview && (
-          <button
-            onClick={onPreview}
-            className="inline-flex items-center justify-center gap-2 rounded-lg border border-border px-3 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <Eye className="size-4" /> Preview
-          </button>
-        )}
+      <div className="border-t border-border p-3">
         {submitted ? (
           <button
             onClick={onSubmit}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-success/40 bg-risk-low-soft/60 px-4 py-2.5 text-sm font-medium text-success transition-colors hover:bg-risk-low-soft"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-success/40 bg-risk-low-soft/60 px-4 py-2.5 text-sm font-medium text-success transition-colors hover:bg-risk-low-soft"
           >
             <Check className="size-4" /> In approval · Stage 1 of 4
           </button>
         ) : (
           <button
             onClick={onSubmit}
-            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <ShieldCheck className="size-4" /> Submit for approval
           </button>
