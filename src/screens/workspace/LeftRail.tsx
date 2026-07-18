@@ -217,7 +217,7 @@ export function LeftRail({
               }`}
             >
               <RiskDot risk={c.risk} />
-              <span className="font-mono text-[10px] tabular-nums text-muted-foreground/70">
+              <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
                 {c.number}
               </span>
               <span className="flex-1 truncate">{c.title}</span>

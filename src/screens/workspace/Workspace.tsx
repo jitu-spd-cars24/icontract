@@ -54,7 +54,7 @@ export function Workspace() {
         >
           <ArrowLeft className="size-3.5" /> Contracts
         </button>
-        <span className="text-muted-foreground/50">/</span>
+        <span className="text-muted-foreground">/</span>
         <span className="max-w-[280px] truncate text-sm font-medium">
           {isBlank ? "Untitled agreement" : "ABC Manufacturing — Purchase Agreement"}
         </span>

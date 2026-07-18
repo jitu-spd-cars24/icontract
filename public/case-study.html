@@ -102,9 +102,10 @@
     font-size: 17px;
     line-height: 1.62;
     -webkit-font-smoothing: antialiased;
+    overflow: hidden;
   }
 
-  .cs-wrap { display: flex; min-height: 100vh; }
+  .cs-wrap { display: flex; height: 100vh; overflow: hidden; }
 
   /* ---------- Left rail ---------- */
   .rail {
@@ -143,17 +144,64 @@
     display: inline-flex; align-items: center; gap: 6px;
   }
   .theme-btn:hover { border-color: var(--merlin); color: var(--merlin-ink); }
+  .cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border-radius: 999px;
+    border: 1px solid color-mix(in oklab, var(--merlin) 42%, var(--line));
+    background: var(--surface);
+    color: var(--merlin-ink);
+    text-decoration: none;
+    padding: 12px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    box-shadow: var(--shadow);
+  }
+  .cta-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--merlin);
+    background: var(--merlin-soft);
+  }
+  .cta-btn .arr {
+    font-family: var(--font-mono);
+    font-size: 14px;
+    color: var(--merlin);
+  }
 
   .progress-top { display: none; }
 
   /* ---------- Pages ---------- */
-  .pages { margin-left: var(--rail); flex: 1; min-width: 0; }
-  .page {
-    max-width: calc(var(--maxw) + 120px);
-    margin: 0 auto; padding: 96px 60px; scroll-margin-top: 0;
-    border-bottom: 1px solid var(--line);
+  .pages {
+    margin-left: var(--rail);
+    flex: 1;
+    min-width: 0;
+    height: 100vh;
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
   }
-  .page:last-child { border-bottom: none; }
+  .pages::-webkit-scrollbar { display: none; }
+  .page {
+    flex: 0 0 calc(100vw - var(--rail));
+    width: calc(100vw - var(--rail));
+    height: 100vh;
+    overflow-y: auto;
+    padding: 96px 60px 96px;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    border-right: 1px solid var(--line);
+    scrollbar-width: thin;
+    scrollbar-color: var(--line-strong) transparent;
+  }
+  .page:last-of-type { border-right: none; }
+  .page::-webkit-scrollbar { width: 8px; }
+  .page::-webkit-scrollbar-thumb { background: var(--line-strong); border-radius: 8px; }
   .inner { max-width: var(--maxw); margin: 0 auto; }
 
   .eyebrow {
@@ -254,6 +302,33 @@
   .figure { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); overflow-x: auto; }
   .figure svg { display: block; width: 100%; height: auto; }
   .figcap { font-family: var(--font-mono); font-size: 11.5px; color: var(--faint); margin-top: 12px; letter-spacing: .02em; }
+  .shotgrid { display: grid; gap: 16px; }
+  .shotgrid.two { grid-template-columns: repeat(2, 1fr); }
+  .shotcard {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 12px;
+    box-shadow: var(--shadow);
+  }
+  .shotcard img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+  }
+  .shotcard b {
+    display: block;
+    margin-top: 12px;
+    font-size: 14px;
+  }
+  .shotcard p {
+    margin: 4px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  @media (max-width: 900px) { .shotgrid.two { grid-template-columns: 1fr; } }
 
   /* mock UI (final experience) */
   .mock { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; box-shadow: var(--shadow-lg); }
@@ -293,15 +368,91 @@
   .edge li { font-size: 13px; color: var(--ink-soft); display: flex; gap: 8px; align-items: baseline; }
   .edge li b { color: var(--ink); font-weight: 600; }
   .edge li .m { color: var(--merlin-ink); }
+  .edge-principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 22px; }
+  .edge-principle {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .edge-principle b {
+    display: block;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+  .edge-principle p {
+    margin: 0;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .edge-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-top: 22px; }
+  .edge-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: var(--shadow);
+  }
+  .edge-card h3 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    letter-spacing: -.01em;
+  }
+  .edge-card .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+    transform: translateY(-1px);
+  }
+  .edge-card .row {
+    display: grid;
+    grid-template-columns: 118px 1fr;
+    gap: 14px;
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+  }
+  .edge-card .row:first-of-type { border-top: none; padding-top: 0; }
+  .edge-card .tag {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .edge-card p {
+    margin: 0;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    max-width: none;
+  }
+  .edge-card strong { font-weight: 650; }
+  @media (max-width: 900px) {
+    .edge-principles, .edge-grid { grid-template-columns: 1fr; }
+    .edge-card .row { grid-template-columns: 1fr; gap: 6px; }
+  }
 
   /* cover */
-  .cover { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; }
+  .cover { min-height: calc(100vh - 192px); display: flex; flex-direction: column; justify-content: center; }
   .cover .huge { font-family: var(--font-display); font-weight: 600; font-size: clamp(38px, 6.5vw, 82px); line-height: 1.02; letter-spacing: -.02em; margin: 0 0 22px; text-wrap: balance; }
   .cover .huge .accent { color: var(--merlin); font-style: italic; }
   .cover-meta { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0 24px; margin-top: 40px; max-width: 720px; }
   @media (max-width: 720px) { .cover-meta { grid-template-columns: repeat(2, 1fr); gap: 20px 24px; } }
 
-  .footer { text-align: center; padding: 60px; color: var(--faint); font-family: var(--font-mono); font-size: 12px; letter-spacing: .04em; }
+  .footer {
+    position: fixed;
+    right: 24px;
+    bottom: 16px;
+    text-align: right;
+    padding: 0;
+    color: var(--faint);
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: .04em;
+    pointer-events: none;
+    z-index: 40;
+  }
   a.inline { color: var(--merlin-ink); text-decoration: none; border-bottom: 1px solid color-mix(in oklab, var(--merlin) 40%, transparent); }
   a.inline:hover { border-color: var(--merlin); }
 
@@ -316,10 +467,15 @@
     :root { --rail: 0px; }
     .rail { display: none; }
     .pages { margin-left: 0; }
-    .page { padding: 72px 28px; }
+    .page {
+      flex-basis: 100vw;
+      width: 100vw;
+      padding: 72px 28px 88px;
+    }
     .progress-top { display: block; position: fixed; top: 0; left: 0; right: 0; height: 3px; background: var(--line); z-index: 60; }
     .progress-top i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--indigo), var(--merlin)); }
     .mobile-theme { position: fixed; top: 12px; right: 12px; z-index: 61; }
+    .footer { left: 20px; right: 20px; text-align: center; bottom: 12px; }
   }
   @media (min-width: 1081px) { .mobile-theme { display: none; } }
 </style>
@@ -429,7 +585,7 @@
               <div class="stat"><div class="n">3<span class="u">→0</span></div><div class="l">High risks surfaced, then resolved before submit</div></div>
               <div class="stat"><div class="n">~2<span class="u">min</span></div><div class="l">Conversational intake vs. a long metadata form</div></div>
               <div class="stat"><div class="n">1</div><div class="l">Health score replaces a blind "Submit"</div></div>
-              <div class="stat"><div class="n">6</div><div class="l">Entry points, one workspace they all land in</div></div>
+              <div class="stat"><div class="n">2</div><div class="l">Product modes sharing one contract model</div></div>
             </div>
           </div>
         </div>
@@ -734,8 +890,8 @@
     <section class="page" id="p11">
       <div class="inner">
         <div class="eyebrow">The authoring flow <span class="pg">11 / 21</span></div>
-        <h1 class="title">Six ways in, one place to work.</h1>
-        <p class="lead">Whether you start from Merlin, a template, third-party paper, a blank editor, or a duplicate — every path converges on the same workspace, so the mental model is learned once.</p>
+        <h1 class="title">Two product modes, one contract model.</h1>
+        <p class="lead">The prototype actually supports two entry experiences: a traditional enterprise flow and a NextGen AI mode. Both operate on the same contract state, clauses, metadata, risks and approvals, so the product can serve both guided and high-agency users without splitting the mental model.</p>
         <div class="figure" style="margin-top:26px">
           <svg viewBox="0 0 900 260" role="img" aria-label="End to end contract authoring flow">
             <defs><marker id="fa" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="var(--merlin)"/></marker></defs>
@@ -785,7 +941,29 @@
               <g><rect x="712" y="172" width="130" height="30" rx="8" fill="var(--ok-soft)" stroke="var(--ok)"/><text x="777" y="191" fill="var(--ok)" font-size="9.5">Approval &amp; e-sign</text></g>
             </g>
           </svg>
-          <div class="figcap">Fig 11.1 — Guided lead-in (metadata → template → draft), an open authoring loop, then a gated exit. Structure where it reduces uncertainty; freedom where it doesn't.</div>
+          <div class="figcap">Fig 11.1 — In the traditional path, guided lead-in reduces uncertainty first, then hands the author to the workspace where risk resolution, collaboration and approval readiness all stay attached to the same contract object.</div>
+        </div>
+        <div class="shotgrid two" style="margin-top:20px">
+          <div class="shotcard">
+            <img src="case-study-assets/01-chooser.png" alt="Chooser screen offering Traditional Contract and NextGen AI Contract">
+            <b>Mode chooser — the product is explicit about two ways of working</b>
+            <p>This matters in the interview story: the prototype is not one monolithic flow. It deliberately supports both a structured enterprise path and a chat-led path, then keeps them grounded in the same contract model.</p>
+          </div>
+          <div class="shotcard">
+            <img src="case-study-assets/03-starting-point.png" alt="Traditional new contract starting point with five ways to begin">
+            <b>Traditional start — guided entry without locking the user into a wizard</b>
+            <p>The structured mode gives five clear starts: Merlin intake, template, import paper, blank editor and duplicate. This is where the product reduces first-use anxiety and makes each path legible.</p>
+          </div>
+          <div class="shotcard">
+            <img src="case-study-assets/04-metadata-review.png" alt="Metadata review screen with confidence overview and Merlin suggestions">
+            <b>Metadata review — confidence and correction are first-class</b>
+            <p>Auto-filled fields, review states, missing states and one-click Merlin fixes turn setup into a decision-support step instead of a form dump. This is one of the clearest product strengths in the prototype.</p>
+          </div>
+          <div class="shotcard">
+            <img src="case-study-assets/08-nextgen-home.png" alt="NextGen AI home screen with prompt box, recent chats and proactive Merlin briefing">
+            <b>NextGen home — AI-first entry with visible product state</b>
+            <p>The AI mode is not just a blank chat box. It opens with recent contracts, portfolio cues, approvals and suggested actions, so even the conversational path starts from operational context.</p>
+          </div>
         </div>
       </div>
     </section>
@@ -803,12 +981,13 @@
               <tr><td>Long wizard</td><td>Safe for novices; enforces order</td><td>Punishes experts; hides the document; every contract feels like the first</td><td class="verdict">✕</td></tr>
               <tr><td>Tabbed record</td><td>Familiar enterprise pattern</td><td>Fragments one contract into disconnected screens; context lost on every switch</td><td class="verdict">✕</td></tr>
               <tr><td>Document-first</td><td>Focus on the artefact</td><td>Great for writing, weak on structure, risk and multi-actor governance</td><td class="verdict">△</td></tr>
-              <tr><td>AI-first (chat)</td><td>Fast for simple asks</td><td>Turns a high-stakes legal document into a black box; no legible state or control</td><td class="verdict">✕</td></tr>
+              <tr><td>AI-only chat</td><td>Fast for simple asks</td><td>If chat is the only artefact, the contract becomes a black box. High-stakes authoring needs visible state, clause structure and governed actions.</td><td class="verdict">✕</td></tr>
               <tr class="win"><td>Hybrid panel</td><td>Document central; structure left; AI right</td><td>Nothing — it carries novice guidance and expert speed in one frame</td><td class="verdict">✓ chosen</td></tr>
             </tbody>
           </table>
         </div>
         <p style="margin-top:22px">The hybrid panel wins because it refuses the false choice. The <strong>document stays the hero</strong> (document-first's strength), <strong>structure and progress live left</strong> (the wizard's guidance, without its rigidity), and <strong>AI sits right</strong> (the copilot's power, kept transparent and optional). A novice follows the rails; an expert ignores them and just writes.</p>
+        <p>The prototype also proves a more nuanced point: <strong>NextGen AI works precisely because it is not AI-only</strong>. Its chat-led experience is paired with a live contract artifact, progress state and approval readiness, so conversation never replaces visibility.</p>
       </div>
     </section>
 
@@ -816,34 +995,30 @@
     <section class="page" id="p13">
       <div class="inner">
         <div class="eyebrow">The final experience <span class="pg">13 / 21</span></div>
-        <h1 class="title">The workspace, annotated.</h1>
-        <p class="lead">Three panels, one document, and a running sense of how close you are to done. Here's what each decision is doing for the user.</p>
+        <h1 class="title">The real workspace, annotated.</h1>
+        <p class="lead">This is the actual traditional workspace from the prototype. The contract stays central, but risk, navigation, collaboration and AI are all present in the same frame, which is the heart of the product argument.</p>
         <div class="split" style="margin-top:26px;grid-template-columns:1.25fr .75fr">
-          <div class="mock" role="img" aria-label="Annotated workspace mockup">
-            <div class="mock-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="t">ABC Manufacturing — Purchase Agreement · Draft · Health 61</span></div>
-            <div class="mock-body">
-              <div class="mock-col l">
-                <div class="mock-row s"></div><div class="mock-row m"></div><div class="mock-row"></div><div class="mock-row s"></div><div class="mock-row m"></div>
-                <div style="height:1px;background:var(--line);margin:10px 0"></div>
-                <div class="mock-row s"></div><div class="mock-row m"></div>
-              </div>
-              <div class="mock-col">
-                <div class="mock-clause ok"><div class="mock-row s" style="margin-bottom:6px"></div><div class="mock-row"></div></div>
-                <div class="mock-clause risk"><div class="mock-row s" style="margin-bottom:6px;background:color-mix(in oklab,var(--crit) 40%,var(--line))"></div><div class="mock-row m"></div><div class="mock-row"></div></div>
-                <div class="mock-clause"><div class="mock-row s" style="margin-bottom:6px"></div><div class="mock-row m"></div></div>
-              </div>
-              <div class="mock-col r">
-                <div class="chip merlin" style="margin-bottom:10px"><span class="dot"></span> Merlin</div>
-                <div class="mock-row a"></div><div class="mock-row m"></div><div class="mock-row"></div>
-                <div style="height:8px"></div><div class="mock-row a"></div><div class="mock-row s"></div>
-              </div>
-            </div>
+          <div class="shotcard" role="img" aria-label="Real traditional workspace screenshot">
+            <img src="case-study-assets/06-traditional-workspace.png" alt="Traditional workspace with left navigation, central clause cards and right Merlin panel">
+            <div class="figcap">Fig 13.1 — The production concept in one frame: health and outline on the left, clause-level authoring in the centre, Merlin guidance on the right.</div>
           </div>
           <div class="annos">
-            <div class="anno"><span class="num">1</span><div><b>Left — the anatomy</b><p>Health score, section nav, and a live clause outline with risk dots. Answers "where am I and what's left?" without leaving the page.</p></div></div>
-            <div class="anno"><span class="num">2</span><div><b>Centre — clause cards</b><p>The document as reviewable units. Each carries status, risk, owner, standard/fallback variants and version history — the green stripe is approved, the red is at-risk.</p></div></div>
-            <div class="anno"><span class="num">3</span><div><b>Right — Merlin</b><p>Proactive, contextual, and always accountable. It opens with "I found 3 risks and 2 missing clauses," not "How can I help?"</p></div></div>
-            <div class="anno"><span class="num">4</span><div><b>Health, not a blind Submit</b><p>Approval readiness is a transparent, gated score tied to live state — you know you're ready before you route.</p></div></div>
+            <div class="anno"><span class="num">1</span><div><b>Left — health, navigation, and clause outline</b><p>This rail keeps state legible. The user always knows their score, open risks, where they are in the contract, and which clauses need attention.</p></div></div>
+            <div class="anno"><span class="num">2</span><div><b>Centre — clause cards instead of a monolithic document</b><p>Each clause becomes an actionable object with status, owner, risk, inline Merlin note, variants and version history. This is where the prototype feels product-specific rather than a generic editor.</p></div></div>
+            <div class="anno"><span class="num">3</span><div><b>Right — Merlin acts on the current contract, not in isolation</b><p>Merlin opens with concrete findings and action buttons. It is proactive, but still checkable: every fix stays visible and every change still belongs to the human.</p></div></div>
+            <div class="anno"><span class="num">4</span><div><b>The point of the frame: fewer hand-offs, more informed decisions</b><p>The user does not leave this workspace to understand risk, chase a policy basis, inspect a clause, or assess readiness. The product collapses those decisions into one place.</p></div></div>
+          </div>
+        </div>
+        <div class="shotgrid two" style="margin-top:20px">
+          <div class="shotcard">
+            <img src="case-study-assets/05-template-selection.png" alt="Template selection screen with ranked recommendations">
+            <b>Before the workspace: template choice is already opinionated</b>
+            <p>The lead-in screens do not just collect data. They shape the draft. Template ranking, jurisdiction fit and recommendation logic push the author toward a safer starting point before writing begins.</p>
+          </div>
+          <div class="shotcard">
+            <img src="case-study-assets/07-approval-modal.png" alt="Approval readiness modal with checks and routing">
+            <b>After the workspace: submit becomes a visible gate, not a leap of faith</b>
+            <p>The approval modal turns the health score into a decision checkpoint. Readiness, routing and e-sign preparation are shown as explicit states, which gives the design a clear end-to-end arc.</p>
           </div>
         </div>
       </div>
@@ -854,11 +1029,12 @@
       <div class="inner">
         <div class="eyebrow">Merlin, the co-pilot <span class="pg">14 / 21</span></div>
         <h1 class="title">Not a chatbot. A colleague who has read the playbook.</h1>
-        <p class="lead">A chat box makes you do the work of knowing what to ask. On a legal document, that's exactly backwards. Merlin is <em class="q">proactive and accountable</em> — it reads the contract and tells you what deserves a decision.</p>
+        <p class="lead">Merlin shows up in two forms in the prototype: as a right-hand co-pilot inside the traditional workspace, and as the centrepiece of the NextGen AI mode. In both, the principle is the same: AI is only useful here when the contract stays visible and the reasoning stays inspectable.</p>
         <div class="split" style="margin-top:28px">
           <div>
             <p class="kicker">Why contextual, not conversational</p>
             <p>Merlin always knows the current clause, the supplier, company policy, jurisdiction, prior contracts and the approval stage. That context is the product. It's why it can say <em class="q">"This supplier usually accepts Net 45"</em> instead of waiting to be asked.</p>
+            <p>That principle is what makes the NextGen mode viable. The chat is not free-floating; it is paired with a live artifact showing draft progress, metadata completeness, risks and approval readiness. In other words, the prototype doesn't pick chat over product state — it binds them together.</p>
             <p class="kicker" style="margin-top:22px">The anatomy of a trustworthy suggestion</p>
             <p>Every consequential suggestion exposes the same five things, so the human can verify in seconds rather than take it on faith:</p>
             <ul class="clean" style="margin-top:14px">
@@ -870,18 +1046,14 @@
             </ul>
           </div>
           <div>
-            <div class="card merlin">
-              <div class="chip merlin" style="margin-bottom:12px"><span class="dot"></span> Live suggestion</div>
-              <h3 style="font-size:15px">Payment Terms exceed policy</h3>
-              <p style="color:var(--ink-soft);font-size:13.5px;margin:8px 0">Supplier requested Net 90. Company policy for this category is Net 45 — high cash-flow and DSO impact.</p>
-              <div style="font-family:var(--font-mono);font-size:11px;color:var(--muted);margin-bottom:12px">Basis: Procurement Payment Standard §3.2 · Confidence 97%</div>
-              <div class="chips">
-                <span class="chip merlin">Apply fix</span><span class="chip">Compare</span><span class="chip">Explain</span><span class="chip">Escalate</span>
-              </div>
+            <div class="shotcard">
+              <img src="case-study-assets/09-nextgen-chat-artifact.png" alt="NextGen AI mode showing Merlin chat and live contract artifact side by side">
+              <b>NextGen AI mode — conversation plus artifact, not conversation instead of artifact</b>
+              <p>The chat drives momentum, but the artifact on the right keeps the contract legible. That pairing is the design move that keeps the AI mode interview-defensible: it is conversational without becoming opaque.</p>
             </div>
             <div class="grid g2" style="margin-top:16px;gap:12px">
               <div class="card" style="padding:16px"><h3 style="font-size:13.5px">Guardrail</h3><p style="font-size:12.5px">Never edits legal, financial or compliance text silently. AI-drafted clauses are flagged for review, not auto-approved.</p></div>
-              <div class="card" style="padding:16px"><h3 style="font-size:13.5px">Degrades honestly</h3><p style="font-size:12.5px">Low confidence, missing permissions or conflicting policy each have a defined state — it says so rather than guessing.</p></div>
+              <div class="card" style="padding:16px"><h3 style="font-size:13.5px">Why it works</h3><p style="font-size:12.5px">Suggested fixes, missing clauses, policy basis and progress all stay visible. The user can act quickly without surrendering verification.</p></div>
             </div>
           </div>
         </div>
@@ -897,9 +1069,9 @@
       <div class="inner">
         <div class="eyebrow">Panel architecture <span class="pg">15 / 21</span></div>
         <h1 class="title">Why three panels beat a wall of tabs.</h1>
-        <p class="lead">Traditional enterprise UIs fragment one object across many screens. The panel model keeps the object whole and puts everything else in service of it — synchronized, collapsible, and role-aware.</p>
+        <p class="lead">Traditional enterprise UIs fragment one object across many screens. The panel model keeps the object whole and puts everything else in service of it — synchronized, collapsible and stateful. The prototype proves that the contract can stay whole even while metadata, AI, comments, approvals and audit all orbit it.</p>
         <div class="figure" style="margin-top:26px">
-          <svg viewBox="0 0 820 240" role="img" aria-label="Three panel architecture diagram">
+          <svg viewBox="0 0 820 270" role="img" aria-label="Three panel architecture diagram">
             <g font-family="var(--font-sans)">
               <rect x="20" y="20" width="170" height="200" rx="12" fill="var(--surface-2)" stroke="var(--line-strong)"/>
               <rect x="205" y="20" width="360" height="200" rx="12" fill="var(--surface)" stroke="var(--merlin)" stroke-width="1.5"/>
@@ -925,16 +1097,17 @@
               <g stroke="var(--merlin)" stroke-width="1" stroke-dasharray="4 3" fill="none">
                 <path d="M190,175 L205,175"/><path d="M565,175 L580,175"/>
               </g>
-              <text x="410" y="200" text-anchor="middle" font-size="10" fill="var(--muted)">Selecting a clause in any panel syncs the other two — selection is shared state, not a navigation event.</text>
-              <text x="410" y="215" text-anchor="middle" font-size="9" fill="var(--faint)">Both side panels collapse; defaults differ for novice (rails open) vs. expert (document maximised).</text>
+              <rect x="190" y="188" width="440" height="42" rx="10" fill="color-mix(in oklab, var(--surface) 82%, transparent)" stroke="var(--line)"/>
+              <text x="410" y="205" text-anchor="middle" font-size="10" fill="var(--muted)">Clause selection is shared state across all three panels.</text>
+              <text x="410" y="220" text-anchor="middle" font-size="9" fill="var(--faint)">Either rail can collapse, shifting from guided review to focused drafting.</text>
             </g>
           </svg>
           <div class="figcap">Fig 15.1 — Left describes, centre holds, right assists. One object, three synchronized lenses.</div>
         </div>
         <div class="grid g3" style="margin-top:20px">
           <div class="card"><h3>Selection is shared</h3><p>Click a clause in the outline, a risk in Merlin, or the card itself — all three panels focus together. No context is lost switching tools.</p></div>
-          <div class="card"><h3>Collapsible &amp; resizable</h3><p>Panels fold away for deep writing and return for review. Space follows the task, not a fixed template.</p></div>
-          <div class="card"><h3>Role-aware defaults</h3><p>A first-time author sees the rails; a power user gets the document maximised. Same architecture, different opening posture.</p></div>
+          <div class="card"><h3>Collapsible rails</h3><p>Both side panels fold away for deep writing and return for review. The workspace can move from operational cockpit to focused drafting without forcing a mode switch.</p></div>
+          <div class="card"><h3>One state model, many views</h3><p>The same contract powers the traditional workspace, approval flow, comments, audit and the NextGen artifact. That shared state is what makes the product feel coherent instead of stitched together.</p></div>
         </div>
       </div>
     </section>
@@ -1008,39 +1181,88 @@
     <section class="page" id="p18">
       <div class="inner">
         <div class="eyebrow">Edge cases <span class="pg">18 / 21</span></div>
-        <h1 class="title">The enterprise lives in the exceptions.</h1>
-        <p class="lead">A demo handles the happy path; a product survives the real one. These are designed states, not afterthoughts — each with a defined, non-blocking response.</p>
-        <div class="grid g3" style="margin-top:28px">
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--warn)"></span> Metadata</h4><ul>
-            <li><b>Currency mismatch</b> — USD value in an India deal → <span class="m">flag &amp; one-click fix</span></li>
-            <li><b>Missing jurisdiction / signer</b> — marked, never blocks progress</li>
-            <li><b>Duplicate supplier</b> — matched to master, linked not re-created</li>
-          </ul></div>
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--merlin)"></span> AI</h4><ul>
-            <li><b>Low confidence</b> — surfaced as uncertain, human decides</li>
-            <li><b>Hallucination guard</b> — every claim cites a basis</li>
-            <li><b>Service down</b> — authoring continues; AI degrades gracefully</li>
-          </ul></div>
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--crit)"></span> Risk &amp; legal</h4><ul>
-            <li><b>Non-standard clause</b> — Net 90, capped indemnity flagged vs. playbook</li>
-            <li><b>Missing mandatory clause</b> — DPA / insurance suggested &amp; draftable</li>
-            <li><b>Custom clause</b> — auto-routes to legal for sign-off</li>
-          </ul></div>
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--ok)"></span> Approval</h4><ul>
-            <li><b>Approver on leave</b> — offer a delegate, avoid the bottleneck</li>
-            <li><b>Chain unavailable</b> — predict &amp; surface before routing</li>
-            <li><b>Not ready</b> — health gate explains what's missing</li>
-          </ul></div>
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--muted)"></span> Performance &amp; offline</h4><ul>
-            <li><b>300-page contract</b> — outline + virtualization</li>
-            <li><b>Slow network</b> — optimistic UI, auto-save</li>
-            <li><b>Offline edits</b> — queued, reconciled on reconnect</li>
-          </ul></div>
-          <div class="edge"><h4><span class="dot" style="width:6px;height:6px;border-radius:50%;background:var(--faint)"></span> People &amp; permissions</h4><ul>
-            <li><b>Read-only users</b> — clear, non-punitive state</li>
-            <li><b>Concurrent editing</b> — presence + version conflict handling</li>
-            <li><b>Unsaved changes</b> — protected on navigate away</li>
-          </ul></div>
+        <h1 class="title">Edge cases are where trust is won.</h1>
+        <p class="lead">If I were reviewing this in an interview, this is the slide that would tell me whether the product is only polished on the happy path, or genuinely thought through. The rule is simple: when something goes wrong, the user should still know <em class="q">what broke, what the system did, and what happens next.</em></p>
+
+        <div class="edge-principles">
+          <div class="edge-principle">
+            <b>Keep the contract moving</b>
+            <p>Missing data should slow the user down only where it matters, not block the whole draft.</p>
+          </div>
+          <div class="edge-principle">
+            <b>Make the issue obvious</b>
+            <p>Every risk or gap should appear in context, not disappear into a report or approval bounce-back.</p>
+          </div>
+          <div class="edge-principle">
+            <b>Explain the next step</b>
+            <p>Good enterprise UX is not just warning the user. It tells them what the product will do next.</p>
+          </div>
+        </div>
+
+        <div class="edge-grid">
+          <div class="edge-card">
+            <h3><span class="dot" style="background:var(--warn)"></span>Bad data enters the contract</h3>
+            <div class="row">
+              <div class="tag">Stress test</div>
+              <p>Supplier, signer, jurisdiction or currency is wrong, missing or duplicated.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Product behavior</div>
+              <p>Merlin <strong>flags the field in place</strong>, offers a one-click fix, and links to the master supplier record instead of creating duplicate data.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Why it matters</div>
+              <p>The user keeps drafting, but the data problem stays visible and recoverable.</p>
+            </div>
+          </div>
+
+          <div class="edge-card">
+            <h3><span class="dot" style="background:var(--merlin)"></span>AI is uncertain or unavailable</h3>
+            <div class="row">
+              <div class="tag">Stress test</div>
+              <p>Merlin is low-confidence, or the AI layer cannot help at that moment.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Product behavior</div>
+              <p>The UI shows <strong>confidence and policy basis</strong>. If AI is down, authoring continues and the AI layer steps back gracefully.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Why it matters</div>
+              <p>Trust comes from honesty. The product never pretends certainty it does not have.</p>
+            </div>
+          </div>
+
+          <div class="edge-card">
+            <h3><span class="dot" style="background:var(--crit)"></span>Policy or legal risk appears</h3>
+            <div class="row">
+              <div class="tag">Stress test</div>
+              <p>A clause becomes non-standard, or mandatory language like DPA / insurance is missing.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Product behavior</div>
+              <p>The clause is <strong>highlighted against the playbook</strong>, alternatives stay visible, and missing mandatory language can be drafted in place.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Why it matters</div>
+              <p>Risk is caught while authoring, not days later in a legal inbox.</p>
+            </div>
+          </div>
+
+          <div class="edge-card">
+            <h3><span class="dot" style="background:var(--ok)"></span>Approval or collaboration gets blocked</h3>
+            <div class="row">
+              <div class="tag">Stress test</div>
+              <p>An approver is on leave, the contract is not ready, or several people are editing around the same draft.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Product behavior</div>
+              <p>The product offers <strong>delegation, health-gate explanations, comments, and version visibility</strong> before routing stalls.</p>
+            </div>
+            <div class="row">
+              <div class="tag">Why it matters</div>
+              <p>Submission becomes predictable instead of blind, which is where enterprise confidence is actually won.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -1112,10 +1334,10 @@
             <h3 style="font-family:var(--font-display);font-size:20px;font-weight:600">Now — walk into the prototype.</h3>
             <p style="color:var(--ink-soft);font-size:14.5px;margin-top:6px">You've seen the thinking. The clickable prototype puts you in Jitendra's seat: intake with Merlin, resolve a Net 90 risk, watch the health score move, and route for approval.</p>
           </div>
-          <div class="chips">
-            <span class="chip merlin"><span class="dot"></span> React + shadcn/ui</span>
-            <span class="chip">Live &amp; clickable</span>
-          </div>
+          <a class="cta-btn" href="/?open=icontract-panel">
+            Open iContract panel
+            <span class="arr">→</span>
+          </a>
         </div>
       </div>
     </section>
@@ -1127,6 +1349,7 @@
 <script>
   (function () {
     var root = document.documentElement;
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function currentTheme() {
       return root.getAttribute('data-theme') ||
         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -1140,6 +1363,36 @@
     if (b1) b1.addEventListener('click', toggle);
     if (b2) b2.addEventListener('click', toggle);
 
+    var pages = document.querySelector('.pages');
+    var links = Array.prototype.slice.call(document.querySelectorAll('.rail-link'));
+    var sections = links.map(function (l) { return document.querySelector(l.getAttribute('href')); });
+    var ptop = document.getElementById('ptop');
+    var wheelAccum = 0;
+    var wheelDir = 0;
+    var lastWheelAt = 0;
+    var lastNavAt = 0;
+    var WHEEL_THRESHOLD = 260;
+    var WHEEL_COOLDOWN = 520;
+
+    function activeIndex() {
+      if (!pages || !sections.length) return 0;
+      var mid = pages.scrollLeft + pages.clientWidth * 0.5;
+      var idx = 0;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i] && sections[i].offsetLeft <= mid) idx = i;
+      }
+      return idx;
+    }
+
+    function goToPage(idx, pushHash) {
+      if (!pages || !sections[idx]) return;
+      pages.scrollTo({
+        left: sections[idx].offsetLeft,
+        behavior: reduceMotion ? 'auto' : 'smooth'
+      });
+      if (pushHash !== false) history.replaceState(null, '', '#' + sections[idx].id);
+    }
+
     // scroll reveal
     var io = new IntersectionObserver(function (entries) {
       entries.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
@@ -1148,21 +1401,75 @@
       if (i === 0) return; el.classList.add('reveal'); io.observe(el);
     });
 
-    // active nav + top progress
-    var links = Array.prototype.slice.call(document.querySelectorAll('.rail-link'));
-    var sections = links.map(function (l) { return document.querySelector(l.getAttribute('href')); });
-    var ptop = document.getElementById('ptop');
+    links.forEach(function (link, idx) {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        goToPage(idx);
+      });
+    });
+
     function onScroll() {
-      var y = window.scrollY + window.innerHeight * 0.35;
-      var idx = 0;
-      for (var i = 0; i < sections.length; i++) { if (sections[i] && sections[i].offsetTop <= y) idx = i; }
+      var idx = activeIndex();
       links.forEach(function (l, i) { l.classList.toggle('active', i === idx); });
-      if (ptop) {
-        var h = document.body.scrollHeight - window.innerHeight;
-        ptop.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+      if (ptop && pages) {
+        var w = pages.scrollWidth - pages.clientWidth;
+        ptop.style.width = (w > 0 ? (pages.scrollLeft / w) * 100 : 0) + '%';
       }
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
+
+    if (pages) {
+      pages.addEventListener('scroll', onScroll, { passive: true });
+      pages.addEventListener('wheel', function (e) {
+        if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
+        var now = Date.now();
+        var idx = activeIndex();
+        var current = sections[idx];
+        if (!current) return;
+        var canScrollDown = current.scrollTop + current.clientHeight < current.scrollHeight - 2;
+        var canScrollUp = current.scrollTop > 2;
+
+        if ((e.deltaY > 0 && canScrollDown) || (e.deltaY < 0 && canScrollUp)) {
+          wheelAccum = 0;
+          wheelDir = 0;
+          return;
+        }
+
+        var next = idx + (e.deltaY > 0 ? 1 : -1);
+        if (next < 0 || next >= sections.length) return;
+
+        if (now - lastNavAt < WHEEL_COOLDOWN) {
+          e.preventDefault();
+          return;
+        }
+
+        if (now - lastWheelAt > 220) {
+          wheelAccum = 0;
+          wheelDir = 0;
+        }
+        lastWheelAt = now;
+
+        var dir = e.deltaY > 0 ? 1 : -1;
+        if (wheelDir !== dir) wheelAccum = 0;
+        wheelDir = dir;
+        wheelAccum += Math.abs(e.deltaY);
+
+        if (wheelAccum < WHEEL_THRESHOLD) return;
+
+        e.preventDefault();
+        wheelAccum = 0;
+        wheelDir = 0;
+        lastNavAt = now;
+        goToPage(next);
+      }, { passive: false });
+    }
+
+    window.addEventListener('resize', onScroll, { passive: true });
+    if (location.hash) {
+      var start = sections.findIndex(function (section) { return section && ('#' + section.id) === location.hash; });
+      if (start >= 0) {
+        requestAnimationFrame(function () { goToPage(start, false); });
+      }
+    }
     onScroll();
   })();
 </script>

@@ -86,6 +86,7 @@ let toastSeq = 0;
 let activitySeq = 100;
 let clauseSeq = 0;
 let commentSeq = 0;
+const PANEL_DEEP_LINK = "icontract-panel";
 
 export const CURRENT_USER = { name: "Jitendra Kumar", role: "Procurement" };
 export const MENTIONABLE = [
@@ -114,9 +115,19 @@ const SCAFFOLD: NewClause[] = [
   { title: "Governing Law & Dispute Resolution", body: "This Agreement is governed by the laws of [jurisdiction]. Disputes shall be resolved by arbitration seated in [seat].", status: "standard", risk: "low" },
 ];
 
+function isOpeningIContractPanel() {
+  if (typeof window === "undefined") return false;
+  return new URLSearchParams(window.location.search).get("open") === PANEL_DEEP_LINK;
+}
+
 export function StoreProvider({ children }: { children: React.ReactNode }) {
-  const [appMode, setAppMode] = React.useState<"chooser" | "traditional" | "nextgen">("chooser");
-  const [step, setStep] = React.useState<FlowStep>("dashboard");
+  const openIContractPanel = isOpeningIContractPanel();
+  const [appMode, setAppMode] = React.useState<"chooser" | "traditional" | "nextgen">(
+    () => (openIContractPanel ? "traditional" : "chooser")
+  );
+  const [step, setStep] = React.useState<FlowStep>(() =>
+    openIContractPanel ? "workspace" : "dashboard"
+  );
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
   const [clauses, setClauses] = React.useState<Clause[]>(CLAUSES);
   const [metadata, setMetadata] = React.useState<MetadataField[]>(METADATA);

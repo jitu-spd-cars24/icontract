@@ -43,12 +43,17 @@ export function MerlinMark({
   return (
     <span
       className={cn(
-        "relative grid place-items-center rounded-lg bg-merlin text-merlin-foreground shrink-0",
+        "relative grid place-items-center text-white shrink-0",
         active && "merlin-glow"
       )}
-      style={{ width: size, height: size }}
+      style={{
+        width: size,
+        height: size,
+        borderRadius: Math.max(7, size * 0.28),
+        background: "linear-gradient(140deg, var(--primary) 0%, var(--merlin) 62%, color-mix(in oklch, var(--merlin) 72%, #ff86cf) 100%)",
+      }}
     >
-      <Sparkles style={{ width: size * 0.55, height: size * 0.55 }} />
+      <Sparkles style={{ width: size * 0.52, height: size * 0.52 }} />
     </span>
   );
 }

@@ -1,3 +1,4 @@
+import * as React from "react";
 import { StoreProvider, useStore } from "@/store";
 import { ToastHost } from "@/components/shared";
 import { Chooser } from "@/screens/Chooser";
@@ -40,6 +41,17 @@ function TraditionalRouter() {
 
 function Root() {
   const { appMode } = useStore();
+
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("open") !== "icontract-panel") return;
+
+    params.delete("open");
+    const next = params.toString();
+    const cleanUrl = `${window.location.pathname}${next ? `?${next}` : ""}${window.location.hash}`;
+    window.history.replaceState({}, "", cleanUrl);
+  }, []);
+
   if (appMode === "chooser") return <Chooser />;
   if (appMode === "nextgen") return <NextGenWorkspace />;
   return <TraditionalRouter />;

@@ -859,7 +859,7 @@ function HistoryTab({ clause }: { clause: Clause | null }) {
                 <span className="font-medium">{e.actor}</span>{" "}
                 <span className="text-muted-foreground">{e.action}</span>{" "}
                 {e.target && <span className="font-medium">{e.target}</span>}
-                <div className="text-[10px] text-muted-foreground/70">{e.timestamp}</div>
+                <div className="text-[10px] text-muted-foreground">{e.timestamp}</div>
               </div>
             </div>
           ))}

@@ -26,6 +26,7 @@ interface Msg {
   text?: string;
   cards?: Card[];
   files?: Attachment[];
+  streaming?: boolean;
 }
 
 function fileKind(name: string, type: string): Attachment["kind"] {
@@ -172,9 +173,25 @@ export function MerlinChat({
   }, [messages, typing]);
 
   const push = (m: Msg) => setMessages((prev) => [...prev, m]);
+  // Streamed reply — brief "thinking", then reveal word-by-word; cards land after
   function merlinReply(text: string, cards?: Card[]) {
     setTyping(true);
-    window.setTimeout(() => { setTyping(false); push({ id: uid(), role: "merlin", text, cards }); }, 600);
+    const id = uid();
+    window.setTimeout(() => {
+      setTyping(false);
+      push({ id, role: "merlin", text: "", streaming: true });
+      const words = text.split(" ");
+      let i = 0;
+      const iv = window.setInterval(() => {
+        i += 1;
+        const partial = words.slice(0, i).join(" ");
+        setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: partial } : m)));
+        if (i >= words.length) {
+          window.clearInterval(iv);
+          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, streaming: false, cards } : m)));
+        }
+      }, 20);
+    }, 360);
   }
 
   function handleCard(card: Card) {
@@ -199,13 +216,12 @@ export function MerlinChat({
     setTyping(true);
     window.setTimeout(() => {
       generateFromIntake();
-      setTyping(false);
       setPhase("authoring");
       const cards = INSIGHTS.filter((i) => i.type === "risk" || i.type === "missing").map((i) =>
         i.type === "risk"
           ? { kind: "risk" as const, refId: i.id, title: i.title, detail: i.detail, basis: i.basis, confidence: i.confidence }
           : { kind: "missing" as const, refId: i.id === "i4" ? "m1" : "m2", title: i.title.replace("Missing clause — ", ""), detail: i.detail, basis: i.basis, confidence: i.confidence });
-      push({ id: uid(), role: "merlin", text: "Done — I generated your Purchase Agreement from the Supplier Agreement (India, FY26) template, injected the details and ran it against policy. The full contract is on the right. Three things need a decision:", cards });
+      merlinReply("Done — I generated your Purchase Agreement from the Supplier Agreement (India, FY26) template, injected the details and ran it against policy. The full contract is on the right. Three things need a decision:", cards);
     }, 1200);
   }
 
@@ -271,11 +287,16 @@ export function MerlinChat({
               <div key={m.id} className="mb-6 flex gap-3 animate-in-up">
                 <MerlinMark size={28} active={false} />
                 <div className="min-w-0 flex-1">
-                  {m.text && <div className="text-[15px] leading-relaxed text-foreground">{m.text}</div>}
+                  {(m.text || m.streaming) && (
+                    <div className="text-[15px] leading-relaxed text-foreground">
+                      {m.text}
+                      {m.streaming && <span className="ml-0.5 inline-block h-[0.95em] w-[2px] translate-y-[2px] animate-caret rounded-full bg-merlin align-baseline" />}
+                    </div>
+                  )}
                   {m.cards && (
                     <div className="mt-3 space-y-2">
                       {m.cards.map((c) => (
-                        <div key={c.refId} className="rounded-xl border border-border bg-card p-3">
+                        <div key={c.refId} className="animate-in-up rounded-2xl border border-border/70 bg-card p-3.5 shadow-xs">
                           <div className="flex items-center gap-2">
                             <RiskDot risk={c.kind === "risk" ? "high" : "medium"} />
                             <span className="text-sm font-medium">{c.title}</span>
@@ -314,10 +335,13 @@ export function MerlinChat({
             )
           )}
           {typing && (
-            <div className="mb-6 flex gap-3">
-              <MerlinMark size={28} active={false} />
-              <div className="flex items-center gap-1 rounded-2xl bg-muted px-4 py-3">
-                {[0, 1, 2].map((d) => <span key={d} className="size-1.5 animate-bounce rounded-full bg-muted-foreground/60" style={{ animationDelay: `${d * 0.15}s` }} />)}
+            <div className="mb-6 flex items-center gap-3 animate-in-fade">
+              <MerlinMark size={28} active />
+              <div className="flex items-center gap-2 text-[13px] text-muted-foreground">
+                <span className="flex items-center gap-1">
+                  {[0, 1, 2].map((d) => <span key={d} className="size-1.5 animate-bounce rounded-full bg-merlin/70" style={{ animationDelay: `${d * 0.14}s` }} />)}
+                </span>
+                <span>Merlin is thinking…</span>
               </div>
             </div>
           )}
@@ -326,12 +350,12 @@ export function MerlinChat({
 
       <div className="border-t border-border bg-background">
         <div className="mx-auto max-w-2xl px-4 py-3">
-          <div className="mb-2 flex flex-wrap gap-1.5">
+          <div className="mb-2.5 flex flex-wrap gap-2">
             {chips.map((s) => (
-              <button key={s} onClick={() => send(s)} className="rounded-full border border-border bg-card px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:border-merlin-border hover:text-foreground">{s}</button>
+              <button key={s} onClick={() => send(s)} className="press rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-[13px] text-muted-foreground shadow-xs transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm">{s}</button>
             ))}
           </div>
-          <div className="rounded-2xl border border-input bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
+          <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-sm transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
             {/* attachment preview */}
             {attachments.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-1.5 px-1">

@@ -687,7 +687,7 @@ export function VersionsView() {
               <span className="font-medium">{e.actor}</span>{" "}
               <span className="text-muted-foreground">{e.action}</span>{" "}
               {e.target && <span className="font-medium">{e.target}</span>}
-              <span className="ml-1 text-muted-foreground/60">· {e.timestamp}</span>
+              <span className="ml-1 text-muted-foreground">· {e.timestamp}</span>
             </div>
           </div>
         ))}

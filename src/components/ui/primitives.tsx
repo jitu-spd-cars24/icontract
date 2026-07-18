@@ -16,24 +16,24 @@ type ButtonSize = "sm" | "md" | "lg" | "icon";
 
 const buttonVariants: Record<ButtonVariant, string> = {
   default:
-    "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm",
+    "bg-primary text-primary-foreground hover:brightness-110 shadow-xs",
   secondary:
-    "bg-secondary text-secondary-foreground hover:bg-secondary/70 border border-border",
+    "bg-secondary text-secondary-foreground hover:bg-accent",
   outline:
-    "border border-border bg-card hover:bg-accent hover:text-accent-foreground text-foreground",
-  ghost: "hover:bg-accent hover:text-accent-foreground text-foreground",
+    "border border-border bg-card hover:bg-accent hover:border-border/0 text-foreground shadow-xs",
+  ghost: "hover:bg-accent hover:text-accent-foreground text-muted-foreground hover:text-foreground",
   destructive:
-    "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm",
+    "bg-destructive text-destructive-foreground hover:brightness-110 shadow-xs",
   merlin:
-    "bg-merlin text-merlin-foreground hover:bg-merlin/90 shadow-sm",
+    "bg-merlin text-merlin-foreground hover:brightness-110 shadow-xs",
   success:
-    "bg-success text-success-foreground hover:bg-success/90 shadow-sm",
+    "bg-success text-success-foreground hover:brightness-110 shadow-xs",
 };
 
 const buttonSizes: Record<ButtonSize, string> = {
   sm: "h-8 px-3 text-xs gap-1.5 rounded-md",
-  md: "h-9 px-4 text-sm gap-2 rounded-lg",
-  lg: "h-11 px-6 text-sm gap-2 rounded-lg",
+  md: "h-9 px-3.5 text-sm gap-1.5 rounded-lg",
+  lg: "h-11 px-5 text-sm gap-2 rounded-xl",
   icon: "h-9 w-9 rounded-lg",
 };
 
@@ -48,7 +48,7 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     <button
       ref={ref}
       className={cn(
-        "inline-flex items-center justify-center font-medium whitespace-nowrap transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] cursor-pointer select-none [&_svg]:shrink-0",
+        "inline-flex items-center justify-center font-medium whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-40 active:scale-[0.97] cursor-pointer select-none [&_svg]:shrink-0",
         buttonVariants[variant],
         buttonSizes[size],
         className
@@ -69,7 +69,7 @@ export function Card({
   return (
     <div
       className={cn(
-        "rounded-xl border border-border bg-card text-card-foreground shadow-sm",
+        "rounded-2xl border border-border/70 bg-card text-card-foreground shadow-xs",
         className
       )}
       {...props}
@@ -133,7 +133,7 @@ export const Input = React.forwardRef<
   <input
     ref={ref}
     className={cn(
-      "flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50",
+      "flex h-9 w-full rounded-lg border border-input bg-card px-3 py-1 text-sm shadow-xs placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50",
       className
     )}
     {...props}
@@ -148,7 +148,7 @@ export const Textarea = React.forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      "flex min-h-[72px] w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none scrollbar-thin",
+      "flex min-h-[72px] w-full rounded-lg border border-input bg-card px-3 py-2 text-sm shadow-xs placeholder:text-muted-foreground/80 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-ring/25 focus-visible:border-ring disabled:cursor-not-allowed disabled:opacity-50 resize-none scrollbar-thin",
       className
     )}
     {...props}

@@ -7,7 +7,7 @@ import { MerlinChat } from "./workspace/MerlinChat";
 import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
 import { ContractPreview } from "./workspace/ContractPreview";
-import { RECENT_CONTRACTS, DASH_RECS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
+import { RECENT_CONTRACTS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
 import type { RiskLevel } from "@/lib/types";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
@@ -102,7 +102,7 @@ export function NextGenWorkspace() {
       {/* ===== CENTER ===== */}
       <main className="flex min-w-0 flex-1 flex-col">
         {view === "chat" && (
-          <div className="flex h-13 items-center gap-2 border-b border-border px-4 py-2.5">
+          <div className="glass sticky top-0 z-10 flex h-13 items-center gap-2 border-b border-border/60 px-4 py-2.5">
             <button onClick={() => setView("home")} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Back to home"><ArrowLeft className="size-4" /></button>
             <MerlinMark size={26} />
             <div className="min-w-0">
@@ -154,142 +154,121 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onDraftMerlin, the
         <Logo /><Badge tone="merlin" className="ml-auto">NextGen AI</Badge>
         <button onClick={toggleTheme} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent">{theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}</button>
       </div>
-      <div className="mx-auto max-w-5xl px-6 py-10">
-        <div className="flex flex-col items-center text-center">
-          <MerlinMark size={48} />
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Good afternoon, Jitendra</h1>
-          <p className="mt-1 text-[15px] text-muted-foreground">What contract can I help you with today? Describe it in plain language and I'll draft it.</p>
-        </div>
-
-        {/* prompt box */}
-        <div className="mx-auto mt-6 max-w-2xl">
-          <div className="flex items-end gap-2 rounded-2xl border border-input bg-card p-2 shadow-sm focus-within:ring-2 focus-within:ring-ring">
-            <textarea
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
-              rows={1}
-              placeholder="e.g. Draft a purchase agreement with ABC Manufacturing for ₹2 Cr…"
-              className="max-h-32 min-h-[26px] flex-1 resize-none bg-transparent px-2 py-2 text-[15px] outline-none placeholder:text-muted-foreground scrollbar-thin"
-            />
-            <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send"><Send className="size-4" /></Button>
+      {/* hero with calm aurora backdrop */}
+      <div className="aurora grain relative">
+        <div className="mx-auto max-w-2xl px-6 pb-2 pt-16 sm:pt-24">
+          <div className="flex flex-col items-center text-center animate-in-up">
+            <MerlinMark size={52} />
+            <h1 className="mt-6 text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[38px]">Good afternoon, Jitendra</h1>
+            <p className="mt-2.5 text-[15px] leading-relaxed text-muted-foreground">What would you like to work on? Describe a contract in plain language and Merlin will draft, check and de-risk it with you.</p>
           </div>
-          <div className="mt-3 flex flex-wrap justify-center gap-1.5">
-            {["Draft a Purchase Agreement", "Import third-party paper", "Start from a template"].map((s) => (
-              <button key={s} onClick={s.includes("Draft") ? onDraftMerlin : onNew} className="rounded-full border border-border bg-card px-3 py-1.5 text-[13px] text-muted-foreground transition-colors hover:border-merlin-border hover:text-foreground">{s}</button>
+
+          {/* prompt box — the focal surface */}
+          <div className="mt-8">
+            <div className="group flex items-end gap-2 rounded-2xl border border-border/70 bg-card p-2.5 shadow-lg transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_14%,transparent)]">
+              <textarea
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
+                rows={1}
+                placeholder="e.g. Draft a purchase agreement with ABC Manufacturing for ₹2 Cr…"
+                className="max-h-40 min-h-[30px] flex-1 resize-none bg-transparent px-2.5 py-2 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
+              />
+              <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send" className="press rounded-xl"><Send className="size-4" /></Button>
+            </div>
+            <div className="mt-3.5 flex flex-wrap justify-center gap-2">
+              {["Draft a Purchase Agreement", "Import third-party paper", "Start from a template"].map((s) => (
+                <button key={s} onClick={s.includes("Draft") ? onDraftMerlin : onNew} className="press rounded-full border border-border/70 bg-card/70 px-3.5 py-1.5 text-[13px] text-muted-foreground shadow-xs transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm">{s}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-5xl px-6 pb-14">
+        {/* contracts */}
+        <div className="mt-14">
+          <div className="mb-3 flex items-center justify-between">
+            <SectionLabel>Your contracts</SectionLabel>
+            <button onClick={onNew} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"><Plus className="size-3.5" /> New contract</button>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            {RECENT_CONTRACTS.map((c) => (
+              <button key={c.id} onClick={() => onOpen(c.title.split(" — ")[0])} className="group rounded-2xl border border-border/70 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:shadow-sm">
+                <div className="flex items-start gap-3">
+                  <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
+                  <div className="min-w-0 flex-1">
+                    <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
+                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span className="font-mono">{c.id}</span><span>·</span><span>{c.value}</span>
+                    </div>
+                  </div>
+                  <Badge tone={c.status === "Signed" ? "low" : c.status === "Draft" ? "med" : "primary"}>{c.status}</Badge>
+                </div>
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="text-[11px] text-muted-foreground">Health {c.health}%</span>
+                  <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">Open chat <ArrowRight className="size-3.5" /></span>
+                </div>
+              </button>
             ))}
           </div>
         </div>
 
-        {/* Merlin daily briefing */}
-        <div className="mt-10 overflow-hidden rounded-2xl border border-merlin-border">
-          <div className="bg-merlin-soft/60 p-4">
-            <div className="flex items-center gap-2">
-              <MerlinMark size={30} />
-              <span className="text-sm font-semibold">Merlin — your daily briefing</span>
-              <Badge tone="merlin"><Sparkles className="size-3" /> Proactive</Badge>
+        {/* supporting sections */}
+        <div className="mt-8 grid gap-6 xl:grid-cols-3">
+          {/* waiting on you */}
+          <div>
+            <div className="mb-3 flex items-center gap-2">
+              <CheckSquare className="size-4 text-muted-foreground" />
+              <SectionLabel>Waiting on you</SectionLabel>
+              <Badge tone="high" className="ml-auto">{PENDING_APPROVALS.length}</Badge>
             </div>
-            <p className="mt-1.5 text-[13.5px] text-muted-foreground">I reviewed your active portfolio this morning. Here's what needs a decision.</p>
-            <div className="mt-3 grid gap-2 sm:grid-cols-3">
-              {DASH_RECS.map((r) => (
-                <button key={r.id} onClick={onNew} className="flex items-start gap-2 rounded-lg border border-border bg-card p-3 text-left transition-colors hover:border-merlin-border">
-                  <span className="mt-1 size-2 shrink-0 rounded-full" style={{ background: r.tone === "high" ? "var(--risk-high)" : r.tone === "warning" ? "var(--risk-med)" : "var(--info)" }} />
-                  <span className="min-w-0">
-                    <span className="block text-[12.5px] font-medium">{r.title}</span>
-                    <span className="mt-0.5 block text-[11px] text-muted-foreground">{r.detail}</span>
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* contracts + right rail */}
-        <div className="mt-8 grid gap-6 lg:grid-cols-3">
-          {/* contracts */}
-          <div className="lg:col-span-2">
-            <div className="mb-3 flex items-center justify-between">
-              <SectionLabel>Your contracts</SectionLabel>
-              <button onClick={onNew} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"><Plus className="size-3.5" /> New contract</button>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2">
-              {RECENT_CONTRACTS.map((c) => (
-                <button key={c.id} onClick={() => onOpen(c.title.split(" — ")[0])} className="group rounded-xl border border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
-                    <div className="min-w-0 flex-1">
-                      <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
-                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                        <span className="font-mono">{c.id}</span><span>·</span><span>{c.value}</span>
-                      </div>
-                    </div>
-                    <Badge tone={c.status === "Signed" ? "low" : c.status === "Draft" ? "med" : "primary"}>{c.status}</Badge>
+            <div className="divide-y divide-border rounded-2xl border border-border/70 bg-card">
+              {PENDING_APPROVALS.map((a) => (
+                <div key={a.id} className="p-3">
+                  <div className="text-sm font-medium leading-snug">{a.title}</div>
+                  <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>{a.stage}</span><span>{a.from} · {a.waiting}</span>
                   </div>
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className="text-[11px] text-muted-foreground">Health {c.health}%</span>
-                    <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">Open chat <ArrowRight className="size-3.5" /></span>
+                  <div className="mt-2 flex gap-2">
+                    <Button size="sm" variant="success" className="h-7" onClick={() => toast({ title: "Approved", detail: a.title, tone: "success" })}>Approve</Button>
+                    <Button size="sm" variant="outline" className="h-7" onClick={() => onOpen(a.title.split(" — ")[0])}>Review</Button>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* right rail */}
-          <div className="space-y-6">
-            {/* waiting on you */}
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <CheckSquare className="size-4 text-muted-foreground" />
-                <SectionLabel>Waiting on you</SectionLabel>
-                <Badge tone="high" className="ml-auto">{PENDING_APPROVALS.length}</Badge>
-              </div>
-              <div className="divide-y divide-border rounded-xl border border-border bg-card">
-                {PENDING_APPROVALS.map((a) => (
-                  <div key={a.id} className="p-3">
-                    <div className="text-sm font-medium leading-snug">{a.title}</div>
-                    <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                      <span>{a.stage}</span><span>{a.from} · {a.waiting}</span>
-                    </div>
-                    <div className="mt-2 flex gap-2">
-                      <Button size="sm" variant="success" className="h-7" onClick={() => toast({ title: "Approved", detail: a.title, tone: "success" })}>Approve</Button>
-                      <Button size="sm" variant="outline" className="h-7" onClick={() => onOpen(a.title.split(" — ")[0])}>Review</Button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+          {/* recent suppliers */}
+          <div>
+            <div className="mb-3 flex items-center gap-2">
+              <Building2 className="size-4 text-muted-foreground" />
+              <SectionLabel>Recent suppliers</SectionLabel>
             </div>
-
-            {/* recent suppliers */}
-            <div>
-              <div className="mb-3 flex items-center gap-2">
-                <Building2 className="size-4 text-muted-foreground" />
-                <SectionLabel>Recent suppliers</SectionLabel>
-              </div>
-              <div className="divide-y divide-border rounded-xl border border-border bg-card">
-                {RECENT_SUPPLIERS.map((s) => (
-                  <div key={s.name} className="flex items-center gap-3 p-3">
-                    <div className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-primary">{s.name.slice(0, 2).toUpperCase()}</div>
-                    <div className="min-w-0 flex-1">
-                      <div className="truncate text-sm font-medium">{s.name}</div>
-                      <div className="text-[11px] text-muted-foreground">{s.contracts} contracts · {s.region}</div>
-                    </div>
-                    <Badge tone={RISK_META[s.risk as RiskLevel].tone}>{s.risk}</Badge>
+            <div className="divide-y divide-border rounded-2xl border border-border/70 bg-card">
+              {RECENT_SUPPLIERS.map((s) => (
+                <div key={s.name} className="flex items-center gap-3 p-3">
+                  <div className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-primary">{s.name.slice(0, 2).toUpperCase()}</div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-sm font-medium">{s.name}</div>
+                    <div className="text-[11px] text-muted-foreground">{s.contracts} contracts · {s.region}</div>
                   </div>
-                ))}
-              </div>
+                  <Badge tone={RISK_META[s.risk as RiskLevel].tone}>{s.risk}</Badge>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* cycle time */}
-            <div className="rounded-xl border border-border bg-card p-4">
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <TrendingUp className="size-4" />
-                <span className="text-xs font-medium">Cycle time this quarter</span>
-              </div>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-2xl font-semibold tabular-nums">6.2</span>
-                <span className="text-sm text-muted-foreground">days avg</span>
-                <Badge tone="low" className="ml-auto">↓ 38% with Merlin</Badge>
-              </div>
+          {/* cycle time */}
+          <div className="rounded-2xl border border-border/70 bg-card p-4">
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <TrendingUp className="size-4" />
+              <span className="text-xs font-medium">Cycle time this quarter</span>
+            </div>
+            <div className="mt-2 flex items-baseline gap-2">
+              <span className="text-2xl font-semibold tabular-nums">6.2</span>
+              <span className="text-sm text-muted-foreground">days avg</span>
+              <Badge tone="low" className="ml-auto">↓ 38% with Merlin</Badge>
             </div>
           </div>
         </div>
