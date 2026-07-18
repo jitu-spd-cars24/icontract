@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Button, Badge, Separator } from "@/components/ui/primitives";
+import { Button, Badge, Progress, Separator } from "@/components/ui/primitives";
 import {
   MerlinMark,
   ConfidenceMeter,
@@ -9,6 +9,7 @@ import {
 import { useStore } from "@/store";
 import { MISSING_CLAUSES } from "@/lib/data";
 import type { Clause } from "@/lib/types";
+import { useHealth } from "./LeftRail";
 import {
   Sparkles,
   ShieldAlert,
@@ -20,7 +21,6 @@ import {
   Lightbulb,
   ArrowRight,
   Check,
-  X,
   ArrowUpRight,
   MinusCircle,
   PlusCircle,
@@ -83,27 +83,61 @@ function useStream() {
 export function MerlinPanel() {
   const { merlinTab, setMerlinTab, clauses, selectedClauseId } = useStore();
   const selected = clauses.find((c) => c.id === selectedClauseId) ?? null;
+  const health = useHealth();
 
   return (
     <div className="flex h-full w-full min-w-0 flex-col overflow-hidden bg-card">
       {/* header */}
-      <div className="flex items-center gap-2.5 border-b border-border px-4 py-3">
-        <MerlinMark size={30} />
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-1.5 text-sm font-semibold">
-            Merlin
-            <Badge tone="merlin" className="ml-0.5">
-              Co-pilot
+      <div className="border-b border-border px-4 py-4">
+        <div className="flex items-center gap-2.5">
+          <MerlinMark size={30} />
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5 text-sm font-semibold">
+              Merlin
+              <Badge tone="merlin" className="ml-0.5">
+                Co-pilot
+              </Badge>
+            </div>
+            <div className="truncate text-[11px] text-muted-foreground">
+              {selected ? `Focused on §${selected.number} ${selected.title}` : "Watching the whole contract"}
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-3 rounded-2xl border border-border/70 bg-background/70 p-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Contract health
+              </div>
+              <div className="mt-1 flex items-baseline gap-1.5">
+                <span className="text-2xl font-bold tabular-nums">{health.score}</span>
+                <span className="text-xs text-muted-foreground">/100</span>
+              </div>
+            </div>
+            <Badge tone={health.ready ? "low" : "med"}>
+              {health.ready ? "Ready" : "In progress"}
             </Badge>
           </div>
-          <div className="truncate text-[11px] text-muted-foreground">
-            {selected ? `Focused on §${selected.number} ${selected.title}` : "Watching the whole contract"}
+          <Progress
+            value={health.score}
+            tone={health.score >= 90 ? "success" : health.score >= 70 ? "primary" : "warning"}
+            className="mt-3"
+          />
+          <div className="mt-2 flex items-center gap-3 text-[11px] text-muted-foreground">
+            <span className="inline-flex items-center gap-1">
+              <RiskDot risk="high" /> {health.openRisks} risks
+            </span>
+            <span className="inline-flex items-center gap-1">
+              <RiskDot risk="medium" /> {health.openMissing} missing
+            </span>
           </div>
         </div>
       </div>
 
       {/* tabs */}
-      <div className="flex flex-wrap gap-0.5 border-b border-border px-2 py-1.5">
+      <div className="overflow-x-auto border-b border-border px-2 py-2 scrollbar-thin">
+        <div className="flex min-w-max gap-1">
         {TABS.map((t) => {
           const Icon = t.icon;
           const active = merlinTab === t.id;
@@ -111,7 +145,7 @@ export function MerlinPanel() {
             <button
               key={t.id}
               onClick={() => setMerlinTab(t.id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors ${
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium whitespace-nowrap transition-colors ${
                 active
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground hover:bg-accent/50"
@@ -121,6 +155,7 @@ export function MerlinPanel() {
             </button>
           );
         })}
+        </div>
       </div>
 
       {/* body */}
@@ -212,12 +247,11 @@ function InsightsTab() {
   return (
     <div className="space-y-4 p-3">
       {/* summary line */}
-      <div className="rounded-lg bg-merlin-soft/40 p-3 text-sm">
-        <span className="font-medium">
-          I found {risks.length} risk{risks.length !== 1 ? "s" : ""} and{" "}
-          {missing.length} missing clause{missing.length !== 1 ? "s" : ""}.
-        </span>{" "}
-        <span className="text-muted-foreground">Resolve them to raise your health score.</span>
+      <div className="rounded-2xl border border-merlin-border/30 bg-merlin-soft/30 px-3 py-2.5 text-sm">
+        <span className="font-medium">Focus here first.</span>{" "}
+        <span className="text-muted-foreground">
+          Resolve open risks and missing clauses to improve approval readiness.
+        </span>
       </div>
 
       {open.length === 0 && (
@@ -355,7 +389,7 @@ function InsightCard({
   onIgnore: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-border p-3 transition-colors hover:border-merlin-border">
+    <div className="rounded-2xl border border-border p-4 transition-colors hover:border-merlin-border">
       <div className="flex items-start gap-2">
         <RiskDot risk={insight.severity} />
         <div className="min-w-0 flex-1">
@@ -369,13 +403,13 @@ function InsightCard({
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{insight.detail}</p>
         </div>
       </div>
-      <div className="mt-2 flex items-center justify-between">
+      <div className="mt-3 flex items-center justify-between gap-3">
         <span className="truncate text-[11px] text-muted-foreground" title={insight.basis}>
-          {insight.basis}
+          Basis: {insight.basis}
         </span>
         <ConfidenceMeter value={insight.confidence} />
       </div>
-      <div className="mt-2.5 flex flex-wrap gap-1.5">
+      <div className="mt-3 flex flex-wrap gap-2">
         <Button size="sm" variant="merlin" className="h-7" onClick={onAccept}>
           <Check className="size-3" /> Apply fix
         </Button>
@@ -385,19 +419,19 @@ function InsightCard({
         <Button size="sm" variant="outline" className="h-7" onClick={onExplain}>
           Explain
         </Button>
+      </div>
+      <div className="mt-2 flex items-center gap-4 text-xs">
         {insight.actions.includes("escalate") && (
-          <Button size="sm" variant="ghost" className="h-7 text-muted-foreground">
+          <button className="font-medium text-muted-foreground transition-colors hover:text-foreground">
             Escalate
-          </Button>
+          </button>
         )}
-        <Button
-          size="sm"
-          variant="ghost"
-          className="h-7 text-muted-foreground"
+        <button
           onClick={onIgnore}
+          className="font-medium text-muted-foreground transition-colors hover:text-foreground"
         >
-          <X className="size-3" />
-        </Button>
+          Dismiss
+        </button>
       </div>
     </div>
   );

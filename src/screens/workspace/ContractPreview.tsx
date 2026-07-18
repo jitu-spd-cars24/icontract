@@ -6,7 +6,13 @@ import { useHealth } from "./LeftRail";
 import { CONTRACT } from "@/lib/data";
 import { X, Printer, ShieldAlert, Eye, EyeOff } from "lucide-react";
 
-export function ContractPreview({ onClose }: { onClose: () => void }) {
+export function ContractPreview({
+  onClose,
+  statusLabel = "Draft",
+}: {
+  onClose: () => void;
+  statusLabel?: "Draft" | "In Review" | "In Approval" | "Signed";
+}) {
   const { clauses, metadata, isBlank, submitted } = useStore();
   const health = useHealth();
   const [showFlags, setShowFlags] = React.useState(true);
@@ -29,7 +35,19 @@ export function ContractPreview({ onClose }: { onClose: () => void }) {
         <MerlinMark size={26} active={false} />
         <div className="min-w-0">
           <div className="text-sm font-semibold leading-tight">Contract preview</div>
-          <div className="text-[11px] leading-tight text-muted-foreground">{isBlank ? "" : `${CONTRACT.id} · `}{submitted ? <span className="font-medium text-success">In approval</span> : "Draft"} · {clauses.length} clauses</div>
+          <div className="text-[11px] leading-tight text-muted-foreground">
+            {isBlank ? "" : `${CONTRACT.id} · `}
+            {statusLabel === "Signed" ? (
+              <span className="font-medium text-success">Signed</span>
+            ) : statusLabel === "In Approval" || submitted ? (
+              <span className="font-medium text-success">In approval</span>
+            ) : statusLabel === "In Review" ? (
+              <span className="font-medium text-risk-med">In review</span>
+            ) : (
+              "Draft"
+            )}{" "}
+            · {clauses.length} clauses
+          </div>
         </div>
         <Badge tone={health.ready ? "low" : "med"} className="ml-2">Health {health.score}/100</Badge>
         <div className="ml-auto flex items-center gap-1.5">

@@ -22,6 +22,7 @@ export function DocumentCanvas() {
     insertMissingClause,
     setMerlinTab,
     isBlank,
+    submitted,
     duplicatedFrom,
     addClause,
     scaffoldContract,
@@ -68,7 +69,9 @@ export function DocumentCanvas() {
                 <FileText className="size-3.5" />
                 <span className="font-mono">{CONTRACT.id}</span>
                 <span>·</span>
-                <Badge tone="med">Draft</Badge>
+                <Badge tone={submitted ? "primary" : "med"}>
+                  {submitted ? "In approval" : "Draft"}
+                </Badge>
                 {duplicatedFrom && (
                   <Badge tone="merlin">
                     <Copy className="size-3" /> Duplicated from {duplicatedFrom}

@@ -6,6 +6,7 @@ import { LeftRail, useHealth, type CenterView } from "./LeftRail";
 import { DocumentCanvas } from "./DocumentCanvas";
 import { MerlinPanel } from "./MerlinPanel";
 import { ApprovalModal } from "./ApprovalModal";
+import { ContractPreview } from "./ContractPreview";
 import {
   MetadataView,
   CommentsView,
@@ -22,18 +23,20 @@ import {
   MoreHorizontal,
   PanelRightClose,
   Sparkles,
+  Eye,
   Moon,
   Sun,
 } from "lucide-react";
 
 export function Workspace() {
-  const { go, theme, toggleTheme, setMerlinTab, isBlank } = useStore();
+  const { go, theme, toggleTheme, setMerlinTab, isBlank, submitted } = useStore();
   const health = useHealth();
   const [nav, setNav] = React.useState("overview");
   const [view, setView] = React.useState<CenterView>("document");
   const [leftCollapsed, setLeftCollapsed] = React.useState(false);
   const [rightCollapsed, setRightCollapsed] = React.useState(false);
   const [showApproval, setShowApproval] = React.useState(false);
+  const [showPreview, setShowPreview] = React.useState(false);
 
   function handleNav(id: string, v: CenterView) {
     setNav(id);
@@ -43,54 +46,56 @@ export function Workspace() {
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
       {/* top bar */}
-      <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-card px-3">
-        <button onClick={() => go("dashboard")} aria-label="Dashboard">
-          <Logo collapsed />
-        </button>
-        <div className="mx-1 h-5 w-px bg-border" />
-        <button
-          onClick={() => go("dashboard")}
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="size-3.5" /> Contracts
-        </button>
-        <span className="text-muted-foreground">/</span>
-        <span className="max-w-[280px] truncate text-sm font-medium">
-          {isBlank ? "Untitled agreement" : "ABC Manufacturing — Purchase Agreement"}
-        </span>
-        <Badge tone="med">{isBlank ? "Blank draft" : "Draft"}</Badge>
-        <span className="hidden items-center gap-1 text-[11px] text-muted-foreground md:inline-flex">
-          <Check className="size-3 text-success" /> Auto-saved
-        </span>
-
-        <div className="ml-auto flex items-center gap-1.5">
-          <div className="mr-1 hidden items-center gap-2 rounded-lg border border-border px-2.5 py-1 sm:flex">
-            <span className="text-[11px] text-muted-foreground">Health</span>
-            <span className="text-sm font-bold tabular-nums">{health.score}</span>
-            <span
-              className="size-2 rounded-full"
-              style={{
-                background: health.ready ? "var(--risk-low)" : "var(--risk-med)",
-              }}
-            />
+      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border bg-card px-4">
+        <div className="flex min-w-0 items-center gap-3">
+          <button onClick={() => go("dashboard")} aria-label="Dashboard" className="shrink-0">
+            <Logo collapsed />
+          </button>
+          <div className="h-7 w-px bg-border/70" />
+          <div className="flex min-w-0 items-center gap-2">
+            <button
+              onClick={() => go("dashboard")}
+              className="inline-flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="size-3.5" /> Contracts
+            </button>
+            <span className="shrink-0 text-muted-foreground">/</span>
+            <span className="truncate text-sm font-medium">
+              {isBlank ? "Untitled agreement" : "ABC Manufacturing — Purchase Agreement"}
+            </span>
+            <Badge tone={submitted ? "primary" : "med"}>
+              {submitted ? "In approval" : isBlank ? "Blank draft" : "Draft"}
+            </Badge>
+            <span className="hidden shrink-0 items-center gap-1 text-[11px] text-muted-foreground lg:inline-flex">
+              <Check className="size-3 text-success" /> Auto-saved
+            </span>
           </div>
+        </div>
+
+        <div className="ml-4 flex shrink-0 items-center gap-1.5">
           {!isBlank && (
-            <div className="mr-1 hidden -space-x-1.5 sm:flex">
-              <Avatar name="Priya Nair" className="size-6 ring-2 ring-card" />
-              <Avatar name="Rahul Mehta" className="size-6 ring-2 ring-card" tone="var(--info)" />
-              <Avatar name="Ananya Rao" className="size-6 ring-2 ring-card" tone="var(--merlin)" />
+            <div className="hidden items-center gap-1.5 rounded-full border border-border/70 bg-background/70 px-2 py-1 md:flex">
+              <span className="text-[11px] text-muted-foreground">Reviewers</span>
+              <div className="-space-x-1.5 flex">
+                <Avatar name="Priya Nair" className="size-6 ring-2 ring-card" />
+                <Avatar name="Rahul Mehta" className="size-6 ring-2 ring-card" tone="var(--info)" />
+                <Avatar name="Ananya Rao" className="size-6 ring-2 ring-card" tone="var(--merlin)" />
+              </div>
             </div>
           )}
           <Tooltip content="Toggle theme">
-            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme">
+            <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="Toggle theme" className="size-8">
               {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
             </Button>
           </Tooltip>
-          <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+          <Button variant="outline" size="sm" className="hidden md:inline-flex" onClick={() => setShowPreview(true)}>
+            <Eye className="size-3.5" /> Preview
+          </Button>
+          <Button variant="outline" size="sm" className="hidden md:inline-flex">
             <Share2 className="size-3.5" /> Share
           </Button>
-          <Button size="sm" onClick={() => setShowApproval(true)}>
-            Submit for approval
+          <Button size="sm" onClick={() => setShowApproval(true)} variant={submitted ? "outline" : "default"}>
+            {submitted ? "In approval" : "Submit for approval"}
           </Button>
           <Button variant="ghost" size="icon">
             <MoreHorizontal className="size-4" />
@@ -162,6 +167,12 @@ export function Workspace() {
       </div>
 
       {showApproval && <ApprovalModal onClose={() => setShowApproval(false)} />}
+      {showPreview && (
+        <ContractPreview
+          statusLabel={submitted ? "In Approval" : "Draft"}
+          onClose={() => setShowPreview(false)}
+        />
+      )}
     </div>
   );
 }

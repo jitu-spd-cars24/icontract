@@ -37,6 +37,8 @@ interface Store {
   setAppMode: (m: "chooser" | "traditional" | "nextgen") => void;
   step: FlowStep;
   go: (s: FlowStep) => void;
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
   theme: "light" | "dark";
   toggleTheme: () => void;
   isBlank: boolean;
@@ -131,6 +133,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [step, setStep] = React.useState<FlowStep>(() =>
     openIContractPanel ? "workspace" : "dashboard"
   );
+  const [searchQuery, setSearchQuery] = React.useState("");
   const [theme, setTheme] = React.useState<"light" | "dark">("light");
   const [clauses, setClauses] = React.useState<Clause[]>(CLAUSES);
   const [metadata, setMetadata] = React.useState<MetadataField[]>(METADATA);
@@ -579,6 +582,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setAppMode,
     step,
     go: setStep,
+    searchQuery,
+    setSearchQuery,
     theme,
     toggleTheme: () => setTheme((t) => (t === "light" ? "dark" : "light")),
     isBlank,

@@ -1,6 +1,6 @@
 import * as React from "react";
-import { Badge, Progress, Tooltip } from "@/components/ui/primitives";
-import { RiskDot } from "@/components/shared";
+import { Badge, Tooltip } from "@/components/ui/primitives";
+import { RiskDot, SectionLabel } from "@/components/shared";
 import { useStore } from "@/store";
 import {
   LayoutDashboard,
@@ -36,11 +36,11 @@ const NAV: {
   view: CenterView;
   badge?: "risk" | "count";
 }[] = [
-  { id: "overview", label: "Contract Overview", icon: LayoutDashboard, view: "document" },
+  { id: "overview", label: "Overview", icon: LayoutDashboard, view: "document" },
   { id: "metadata", label: "Metadata", icon: Database, view: "metadata" },
-  { id: "commercial", label: "Commercial Details", icon: IndianRupee, view: "commercial" },
+  { id: "commercial", label: "Commercial", icon: IndianRupee, view: "commercial" },
   { id: "clauses", label: "Clauses", icon: ListOrdered, view: "document" },
-  { id: "ai", label: "AI Suggestions", icon: Sparkles, view: "ai", badge: "risk" },
+  { id: "ai", label: "AI Review", icon: Sparkles, view: "ai", badge: "risk" },
   { id: "comments", label: "Comments", icon: MessageSquare, view: "comments", badge: "count" },
   { id: "versions", label: "Versions", icon: GitBranch, view: "versions" },
   { id: "approvals", label: "Approvals", icon: CheckSquare, view: "approvals" },
@@ -128,101 +128,86 @@ export function LeftRail({
   }
 
   return (
-    <div className="flex w-60 flex-col border-r border-border bg-card">
-      {/* health */}
-      <div className="border-b border-border p-3">
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-            Health score
-          </span>
-          <button
-            onClick={onToggle}
-            className="text-muted-foreground hover:text-foreground"
-            aria-label="Collapse sidebar"
-          >
-            <PanelLeftClose className="size-4" />
-          </button>
+    <div className="flex w-56 flex-col border-r border-border bg-card">
+      <div className="flex items-center justify-between px-3 py-3">
+        <div>
+          <SectionLabel>Workspace</SectionLabel>
+          <div className="mt-1 text-sm font-medium">Contract navigation</div>
         </div>
-        <div className="mt-1.5 flex items-baseline gap-1.5">
-          <span className="text-2xl font-bold tabular-nums">{health.score}</span>
-          <span className="text-xs text-muted-foreground">/100</span>
-          <Badge tone={health.ready ? "low" : "med"} className="ml-auto">
-            {health.ready ? "Ready" : "In progress"}
-          </Badge>
-        </div>
-        <Progress
-          value={health.score}
-          tone={health.score >= 90 ? "success" : health.score >= 70 ? "primary" : "warning"}
-          className="mt-2"
-        />
-        <div className="mt-2 flex gap-3 text-[11px] text-muted-foreground">
-          <span className="inline-flex items-center gap-1">
-            <RiskDot risk="high" /> {health.openRisks} risks
-          </span>
-          <span className="inline-flex items-center gap-1">
-            <RiskDot risk="medium" /> {health.openMissing} missing
-          </span>
+        <button
+          onClick={onToggle}
+          className="rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+          aria-label="Collapse sidebar"
+        >
+          <PanelLeftClose className="size-4" />
+        </button>
+      </div>
+
+      <div className="px-2 pb-3">
+        <div className="space-y-1">
+          {NAV.map((n) => {
+            const Icon = n.icon;
+            const isActive = active === n.id;
+            return (
+              <button
+                key={n.id}
+                onClick={() => onSelect(n.id, n.view)}
+                className={`flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm transition-colors ${
+                  isActive
+                    ? "bg-accent font-medium text-foreground"
+                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                }`}
+              >
+                <Icon className="size-4 shrink-0" />
+                <span className="flex-1 text-left">{n.label}</span>
+                {n.badge === "risk" && health.openRisks + health.openMissing > 0 && (
+                  <span className="rounded-full bg-risk-high-soft px-1.5 text-[10px] font-semibold text-risk-high">
+                    {health.openRisks + health.openMissing}
+                  </span>
+                )}
+                {n.badge === "count" && openComments > 0 && (
+                  <span className="rounded-full bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
+                    {openComments}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
 
-      {/* nav */}
-      <nav className="space-y-0.5 border-b border-border p-2">
-        {NAV.map((n) => {
-          const Icon = n.icon;
-          const isActive = active === n.id;
-          return (
-            <button
-              key={n.id}
-              onClick={() => onSelect(n.id, n.view)}
-              className={`flex w-full items-center gap-2.5 rounded-lg px-2.5 py-1.5 text-sm transition-colors ${
-                isActive
-                  ? "bg-accent font-medium text-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-              }`}
-            >
-              <Icon className="size-4 shrink-0" />
-              <span className="flex-1 text-left">{n.label}</span>
-              {n.badge === "risk" && health.openRisks + health.openMissing > 0 && (
-                <span className="rounded-full bg-risk-high-soft px-1.5 text-[10px] font-semibold text-risk-high">
-                  {health.openRisks + health.openMissing}
-                </span>
-              )}
-              {n.badge === "count" && openComments > 0 && (
-                <span className="rounded-full bg-muted px-1.5 text-[10px] font-semibold text-muted-foreground">
-                  {openComments}
-                </span>
-              )}
-            </button>
-          );
-        })}
-      </nav>
+      <div className="mx-3 h-px bg-border/70" />
 
-      {/* document outline */}
-      <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
-        <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          Document outline
+      <div className="min-h-0 flex-1 p-3 pt-3">
+        <div className="flex items-center justify-between">
+          <SectionLabel>Document Outline</SectionLabel>
+          <Badge tone="outline" className="px-1.5">
+            {clauses.length}
+          </Badge>
         </div>
-        <div className="space-y-0.5">
-          {clauses.map((c) => (
-            <button
-              key={c.id}
-              onClick={() => {
-                setSelectedClause(c.id);
-                onSelect("clauses", "document");
-              }}
-              className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors ${
-                selectedClauseId === c.id
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:bg-accent/50"
-              }`}
-            >
-              <RiskDot risk={c.risk} />
-              <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
-                {c.number}
-              </span>
-              <span className="flex-1 truncate">{c.title}</span>
-            </button>
-          ))}
+        <div className="mt-2 h-full overflow-y-auto rounded-2xl border border-border/70 bg-background/60 p-2 scrollbar-thin">
+          <div className="space-y-1">
+            {clauses.map((c) => (
+              <button
+                key={c.id}
+                onClick={() => {
+                  setSelectedClause(c.id);
+                  onSelect("clauses", "document");
+                }}
+                className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition-colors ${
+                  selectedClauseId === c.id
+                    ? "bg-accent text-foreground"
+                    : "text-muted-foreground hover:bg-accent/50"
+                }`}
+              >
+                <RiskDot risk={c.risk} />
+                <span className="font-mono text-[10px] tabular-nums text-muted-foreground">
+                  {c.number}
+                </span>
+                <span className="flex-1 truncate">{c.title}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

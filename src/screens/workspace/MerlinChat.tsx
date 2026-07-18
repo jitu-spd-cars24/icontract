@@ -106,9 +106,11 @@ const SKIP_RE = /not sure|later|someone else|standard terms only|decide|skip/i;
 
 export function MerlinChat({
   sessionKey,
+  sessionStatus = "Draft",
   onOpenApproval,
 }: {
   sessionKey: string | number;
+  sessionStatus?: "Draft" | "In Review" | "In Approval" | "Signed";
   onOpenApproval: () => void;
 }) {
   const { isBlank, intakeMode, insights, clauses, resolveInsight, insertMissingClause, updateField, generateFromIntake } = useStore();
@@ -164,15 +166,32 @@ export function MerlinChat({
     }
     setPhase("authoring");
     const cards = findingCards();
+    const riskCount = cards.filter((c) => c.kind === "risk").length;
+    const missingCount = cards.filter((c) => c.kind === "missing").length;
     const intro: Msg[] = [
-      { id: uid(), role: "merlin", text: isBlank
+      {
+        id: uid(),
+        role: "merlin",
+        text: isBlank
           ? "Blank canvas — tell me what you're drafting and I'll build it. The contract appears as an artifact on the right."
-          : `I've read the ${CONTRACT.type} for ${CONTRACT.supplier}. The full contract is the artifact on the right — here's what I'd look at first.` },
+          : sessionStatus === "Signed"
+          ? `This ${CONTRACT.type} for ${CONTRACT.supplier} is already signed. I can summarise the executed terms, pull out obligations, or recap the key negotiated changes.`
+          : sessionStatus === "In Approval"
+          ? `This ${CONTRACT.type} for ${CONTRACT.supplier} is already in approval. I can summarise what was submitted, explain the readiness, or help with pending approver questions.`
+          : sessionStatus === "In Review"
+          ? `This ${CONTRACT.type} for ${CONTRACT.supplier} is in review. I’d focus on the open commercial edits, the remaining risk items, and what still blocks approval readiness.`
+          : `I've read the ${CONTRACT.type} for ${CONTRACT.supplier}. The full contract is the artifact on the right — here's what I'd look at first.`,
+      },
     ];
-    if (cards.length) intro.push({ id: uid(), role: "merlin", text: `I found ${cards.filter((c) => c.kind === "risk").length} risks and ${cards.filter((c) => c.kind === "missing").length} missing clauses. Act on any of these right here.`, cards });
+    if (cards.length && sessionStatus !== "Signed") {
+      intro.push({ id: uid(), role: "merlin", text: `I found ${riskCount} risks and ${missingCount} missing clauses. Act on any of these right here.`, cards });
+    }
+    if (sessionStatus === "Signed") {
+      intro.push({ id: uid(), role: "merlin", text: "Ask for a summary, upcoming obligations, or what changed before signature." });
+    }
     setMessages(intro);
     // eslint-disable-next-line
-  }, [sessionKey]);
+  }, [sessionKey, sessionStatus]);
 
   React.useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
@@ -252,6 +271,20 @@ export function MerlinChat({
     const t = text.toLowerCase();
     const openRisks = insights.filter((i) => !i.resolved && i.type === "risk");
     const openMissing = insights.filter((i) => !i.resolved && i.type === "missing");
+    if (sessionStatus === "Signed") {
+      if (/obligation|renew|coming up|due/.test(t)) return merlinReply("Key post-signature actions are to track renewal/notice dates, maintain the agreed insurance coverage, and monitor the committed commercial terms through the contract period.");
+      if (/change|diff|before signature|negotiat/.test(t)) return merlinReply("The biggest negotiated changes before signature were payment terms, indemnity alignment, and completing the mandatory DPA and insurance clauses. The executed version reflects those approved positions.");
+      if (/summary|term|status|overview/.test(t)) return merlinReply(`Signed status. ${CONTRACT.type} with ${CONTRACT.supplier}, value ${CONTRACT.value}, effective ${CONTRACT.effectiveDate}, term ${CONTRACT.term}. I can also extract obligations or clause summaries from the signed draft.`);
+      if (/approve|submit|route|ready/.test(t)) return merlinReply("This contract is already signed, so there’s nothing left to route for approval. I can help with the executed terms or the obligation summary instead.");
+      return merlinReply("This contract is already signed. Ask me for the final terms, obligations, or the key negotiated changes.");
+    }
+    if (sessionStatus === "In Approval") {
+      if (/who|next|approver|route|status/.test(t)) return merlinReply("This draft is already in approval. Finance and legal are in the route, and Merlin can help you prepare answers for approvers or summarise what was submitted.");
+      if (/ready|why|approval-ready/.test(t)) return merlinReply(`It was routed because the contract reached ${health.score}/100 and the major risk items were resolved. The remaining task is approver sign-off, not drafting cleanup.`);
+    }
+    if (sessionStatus === "In Review") {
+      if (/review|comment|decision|open point/.test(t)) return merlinReply("This contract is still in review. I’d focus on the payment terms, any non-standard commercial edits, and whether the remaining comments still block approval readiness.");
+    }
     if (/(fix|resolve).*(all|everything)|clean.*up/.test(t)) { openRisks.forEach((i) => resolveInsight(i.id, "accept")); insertMissingClause("m1"); insertMissingClause("m2"); return merlinReply("On it — applied the standard fix to every open risk and inserted the two missing clauses as drafts. Check the artifact and the health score."); }
     if (/payment|net\s?\d|dso/.test(t)) { const p = openRisks.find((i) => i.clauseId === "c4"); if (p) { resolveInsight(p.id, "accept"); return merlinReply("Switched Payment Terms from Net 90 to the policy-standard Net 45 — your biggest cash-flow exposure, resolved."); } return merlinReply("Payment Terms already follow the policy standard (Net 45)."); }
     if (/indemn/.test(t)) { const p = openRisks.find((i) => i.clauseId === "c7"); if (p) { resolveInsight(p.id, "accept"); return merlinReply("Aligned indemnity to the company standard — uncapped for IP and personal-injury claims."); } return merlinReply("Indemnity already matches the standard."); }
@@ -292,13 +325,21 @@ export function MerlinChat({
   if (phase === "intake") chips = INTAKE[step]?.chips ?? [];
   else if (phase === "ready") chips = ["⚡ Generate the draft", "Add another requirement"];
   else {
-    const s: string[] = [];
-    if (openRisks.some((i) => i.clauseId === "c4")) s.push("Fix the payment terms");
-    if (openMissing.length) s.push("Add the missing clauses");
-    if (openRisks.length > 1) s.push("Fix everything");
-    s.push("Summarise the risks");
-    s.push(health.ready ? "Submit for approval" : "Am I ready to submit?");
-    chips = s.slice(0, 4);
+    if (sessionStatus === "Signed") {
+      chips = ["Summarise the final terms", "What obligations are coming up?", "What changed before signature?", "Open the signed draft"];
+    } else if (sessionStatus === "In Approval") {
+      chips = ["Who's next to approve?", "Summarise the open points", "Why was this approval-ready?", "Open approval status"];
+    } else if (sessionStatus === "In Review") {
+      chips = ["Summarise review changes", "What still needs a decision?", "Fix the payment terms", "Am I ready to submit?"];
+    } else {
+      const s: string[] = [];
+      if (openRisks.some((i) => i.clauseId === "c4")) s.push("Fix the payment terms");
+      if (openMissing.length) s.push("Add the missing clauses");
+      if (openRisks.length > 1) s.push("Fix everything");
+      s.push("Summarise the risks");
+      s.push(health.ready ? "Submit for approval" : "Am I ready to submit?");
+      chips = s.slice(0, 4);
+    }
   }
 
   return (

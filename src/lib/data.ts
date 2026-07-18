@@ -450,6 +450,22 @@ export const RECENT_CONTRACTS = [
   { id: "MSA-2026-03310", title: "Cloudspring Technologies — MSA", status: "In Approval", risk: "low", value: "₹85.00 L", updated: "2h ago", health: 96, isDraft: false },
   { id: "NDA-2026-09112", title: "Meridian Logistics — Mutual NDA", status: "Signed", risk: "low", value: "—", updated: "Yesterday", health: 100, isDraft: false },
   { id: "PA-2026-04390", title: "Orbit Components — Purchase Agreement", status: "In Review", risk: "medium", value: "₹1.20 Cr", updated: "2 days ago", health: 84, isDraft: false },
+  { id: "PA-2026-04201", title: "Delta Freight — Purchase Agreement", status: "In Review", risk: "medium", value: "₹95.00 L", updated: "3 days ago", health: 81, isDraft: false },
+  { id: "MSA-2026-03188", title: "Nimbus Steel — Master Services Agreement", status: "Signed", risk: "low", value: "₹3.40 Cr", updated: "5 days ago", health: 100, isDraft: false },
+  { id: "SOW-2026-02871", title: "Apex Digital — Statement of Work", status: "Draft", risk: "medium", value: "₹42.00 L", updated: "6 days ago", health: 68, isDraft: true },
+  { id: "NDA-2026-09077", title: "Vertex Systems — Mutual NDA", status: "Signed", risk: "low", value: "—", updated: "1 week ago", health: 100, isDraft: false },
+  { id: "PA-2026-04014", title: "Crest Manufacturing — Purchase Agreement", status: "In Approval", risk: "low", value: "₹1.75 Cr", updated: "1 week ago", health: 93, isDraft: false },
+  { id: "MSA-2026-02991", title: "BluePeak Consulting — MSA", status: "Draft", risk: "high", value: "₹1.10 Cr", updated: "8 days ago", health: 64, isDraft: true },
+  { id: "PA-2026-03862", title: "Silverline Parts — Purchase Agreement", status: "Signed", risk: "low", value: "₹88.00 L", updated: "10 days ago", health: 100, isDraft: false },
+  { id: "SLA-2026-02041", title: "Infranet Services — SLA", status: "In Review", risk: "medium", value: "₹54.00 L", updated: "11 days ago", health: 79, isDraft: false },
+  { id: "NDA-2026-08830", title: "Northwind Labs — NDA", status: "Signed", risk: "low", value: "—", updated: "12 days ago", health: 100, isDraft: false },
+  { id: "PA-2026-03625", title: "Summit Polymers — Purchase Agreement", status: "Draft", risk: "medium", value: "₹76.00 L", updated: "13 days ago", health: 71, isDraft: true },
+  { id: "MSA-2026-02754", title: "QuantaEdge Technologies — MSA", status: "In Approval", risk: "low", value: "₹1.95 Cr", updated: "2 weeks ago", health: 94, isDraft: false },
+  { id: "PA-2026-03408", title: "Everon Components — Purchase Agreement", status: "Signed", risk: "low", value: "₹63.00 L", updated: "2 weeks ago", health: 100, isDraft: false },
+  { id: "DPA-2026-01872", title: "DataCore Analytics — DPA", status: "In Review", risk: "medium", value: "—", updated: "16 days ago", health: 82, isDraft: false },
+  { id: "PA-2026-03211", title: "Falcon Mobility — Purchase Agreement", status: "Draft", risk: "high", value: "₹2.35 Cr", updated: "17 days ago", health: 66, isDraft: true },
+  { id: "NDA-2026-08719", title: "Kinetic Warehousing — Mutual NDA", status: "Signed", risk: "low", value: "—", updated: "18 days ago", health: 100, isDraft: false },
+  { id: "MSA-2026-02566", title: "Asterix Solutions — MSA", status: "Signed", risk: "low", value: "₹1.22 Cr", updated: "3 weeks ago", health: 100, isDraft: false },
 ];
 
 /* Contracts available to duplicate from */

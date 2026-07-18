@@ -282,16 +282,20 @@
   .aurora::before {
     content: "";
     position: absolute;
-    inset: -20% -10% auto -10%;
-    height: 70%;
+    inset: -24% -18% -8% -18%;
     z-index: -1;
     background:
-      radial-gradient(40% 60% at 20% 20%, color-mix(in oklch, var(--merlin) 22%, transparent), transparent 70%),
-      radial-gradient(35% 55% at 82% 8%, color-mix(in oklch, var(--primary) 18%, transparent), transparent 72%),
-      radial-gradient(45% 50% at 55% 0%, color-mix(in oklch, var(--info) 12%, transparent), transparent 75%);
-    filter: blur(50px);
-    opacity: 0.7;
-    animation: auroraDrift 18s var(--ease-out) infinite alternate;
+      radial-gradient(42% 48% at 18% 18%, color-mix(in oklch, var(--merlin) 28%, transparent), transparent 72%),
+      radial-gradient(36% 46% at 84% 10%, color-mix(in oklch, var(--primary) 24%, transparent), transparent 74%),
+      radial-gradient(48% 42% at 55% 4%, color-mix(in oklch, var(--info) 18%, transparent), transparent 76%),
+      radial-gradient(30% 36% at 72% 62%, color-mix(in oklch, var(--merlin) 14%, transparent), transparent 78%);
+    background-size: 130% 130%;
+    filter: blur(58px) saturate(118%);
+    opacity: 0.86;
+    transform-origin: 50% 18%;
+    animation:
+      auroraDrift 8s ease-in-out infinite alternate,
+      auroraPulse 5.5s ease-in-out infinite;
   }
   @media (prefers-reduced-motion: reduce) {
     .aurora::before { animation: none; }
@@ -328,8 +332,26 @@
   to { opacity: 1; transform: scale(1); }
 }
 @keyframes auroraDrift {
-  from { transform: translate3d(-3%, -2%, 0) scale(1); }
-  to { transform: translate3d(4%, 3%, 0) scale(1.12); }
+  0% {
+    background-position: 0% 42%, 100% 18%, 52% 0%, 90% 76%;
+    filter: blur(58px) saturate(118%) hue-rotate(0deg);
+    transform: translate3d(-7%, -3%, 0) scale(1) rotate(-1deg);
+  }
+  50% {
+    background-position: 34% 12%, 70% 44%, 42% 18%, 58% 50%;
+    filter: blur(62px) saturate(138%) hue-rotate(9deg);
+    transform: translate3d(4%, 2%, 0) scale(1.13) rotate(1.4deg);
+  }
+  100% {
+    background-position: 10% 2%, 94% 58%, 30% 28%, 76% 36%;
+    filter: blur(56px) saturate(128%) hue-rotate(-7deg);
+    transform: translate3d(8%, 5%, 0) scale(1.22) rotate(2deg);
+  }
+}
+@keyframes auroraPulse {
+  0%, 100% { opacity: 0.72; }
+  45% { opacity: 0.95; }
+  70% { opacity: 0.82; }
 }
 @keyframes sheetIn {
   from { opacity: 0; transform: translateX(24px); }

@@ -7,11 +7,13 @@ import { CONTRACT } from "@/lib/data";
 import { FileText, PanelRightClose, ShieldCheck, Check, Eye, ChevronRight } from "lucide-react";
 
 export function ArtifactPanel({
+  sessionStatus = "Draft",
   onClose,
   onOpenClause,
   onSubmit,
   onPreview,
 }: {
+  sessionStatus?: "Draft" | "In Review" | "In Approval" | "Signed";
   onClose: () => void;
   onOpenClause: (clauseId: string) => void;
   onSubmit: () => void;
@@ -29,7 +31,14 @@ export function ArtifactPanel({
     { label: "Risks", done: clauses.length > 0 && openRisks === 0 },
     { label: "Approval", done: submitted },
   ];
-  const statusText = submitted ? "in approval" : "draft";
+  const statusText =
+    sessionStatus === "Signed"
+      ? "signed"
+      : sessionStatus === "In Review"
+      ? "in review"
+      : submitted || sessionStatus === "In Approval"
+      ? "in approval"
+      : "draft";
 
   return (
     <aside className="hidden w-[380px] shrink-0 flex-col border-l border-border bg-card lg:flex">
@@ -43,7 +52,7 @@ export function ArtifactPanel({
           <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground">
             <span>{isBlank ? "Artifact" : CONTRACT.id}</span>
             <span>·</span>
-            <span className={submitted ? "font-medium text-success" : ""}>{statusText}</span>
+            <span className={sessionStatus === "Signed" ? "font-medium text-success" : submitted || sessionStatus === "In Approval" ? "font-medium text-success" : ""}>{statusText}</span>
           </div>
         </div>
         {onPreview && (
@@ -64,8 +73,8 @@ export function ArtifactPanel({
       <div className="border-b border-border px-4 py-3">
         <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span>Progress</span>
-          <Badge tone={submitted ? "primary" : health.ready ? "low" : "med"}>
-            {submitted ? "In approval" : health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}
+          <Badge tone={sessionStatus === "Signed" ? "low" : submitted || sessionStatus === "In Approval" ? "primary" : health.ready ? "low" : "med"}>
+            {sessionStatus === "Signed" ? "Signed" : submitted || sessionStatus === "In Approval" ? "In approval" : sessionStatus === "In Review" ? "In review" : health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}
           </Badge>
         </div>
         <div className="mt-2.5 flex items-center">
@@ -163,12 +172,23 @@ export function ArtifactPanel({
       </div>
 
       <div className="border-t border-border p-3">
-        {submitted ? (
+        {sessionStatus === "Signed" ? (
+          <div className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-success/35 bg-risk-low-soft/60 px-4 py-2.5 text-sm font-medium text-success">
+            <Check className="size-4" /> Signed · read-only snapshot
+          </div>
+        ) : submitted || sessionStatus === "In Approval" ? (
           <button
             onClick={onSubmit}
             className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-success/40 bg-risk-low-soft/60 px-4 py-2.5 text-sm font-medium text-success transition-colors hover:bg-risk-low-soft"
           >
             <Check className="size-4" /> In approval · Stage 1 of 4
+          </button>
+        ) : sessionStatus === "In Review" ? (
+          <button
+            onClick={onSubmit}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-risk-med/35 bg-risk-med-soft/35 px-4 py-2.5 text-sm font-medium text-risk-med transition-colors hover:bg-risk-med-soft/55"
+          >
+            <ShieldCheck className="size-4" /> Review in progress
           </button>
         ) : (
           <button
