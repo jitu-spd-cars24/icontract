@@ -7,6 +7,7 @@ import { MerlinChat } from "./workspace/MerlinChat";
 import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
 import { ContractPreview } from "./workspace/ContractPreview";
+import { ClauseDetail } from "./workspace/ClauseDetail";
 import { RECENT_CONTRACTS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
 import type { RiskLevel } from "@/lib/types";
 import {
@@ -30,6 +31,7 @@ export function NextGenWorkspace() {
   const [artifactOpen, setArtifactOpen] = React.useState(true);
   const [showApproval, setShowApproval] = React.useState(false);
   const [showPreview, setShowPreview] = React.useState(false);
+  const [openClauseId, setOpenClauseId] = React.useState<string | null>(null);
   const [homeInput, setHomeInput] = React.useState("");
 
   function beginSession(name: string) {
@@ -131,12 +133,13 @@ export function NextGenWorkspace() {
 
       {/* ===== RIGHT ARTIFACT ===== */}
       {view === "chat" && artifactOpen && (
-        <ArtifactPanel onClose={() => setArtifactOpen(false)} onPreview={() => setShowPreview(true)} onAskAbout={() => { /* handled inside chat */ }} onSubmit={() => setShowApproval(true)} />
+        <ArtifactPanel onClose={() => setArtifactOpen(false)} onPreview={() => setShowPreview(true)} onOpenClause={(id) => setOpenClauseId(id)} onSubmit={() => setShowApproval(true)} />
       )}
 
       {showStart && <StartModal onClose={() => setShowStart(false)} onPick={startWith} />}
       {showApproval && <ApprovalModal onClose={() => setShowApproval(false)} />}
       {showPreview && <ContractPreview onClose={() => setShowPreview(false)} />}
+      {openClauseId && <ClauseDetail clauseId={openClauseId} onClose={() => setOpenClauseId(null)} />}
     </div>
   );
 }

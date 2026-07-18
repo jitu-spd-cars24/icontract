@@ -4,16 +4,16 @@ import { MerlinMark, ClauseStatusBadge } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { CONTRACT } from "@/lib/data";
-import { FileText, PanelRightClose, ShieldCheck, Check, Eye } from "lucide-react";
+import { FileText, PanelRightClose, ShieldCheck, Check, Eye, ChevronRight } from "lucide-react";
 
 export function ArtifactPanel({
   onClose,
-  onAskAbout,
+  onOpenClause,
   onSubmit,
   onPreview,
 }: {
   onClose: () => void;
-  onAskAbout: (label: string) => void;
+  onOpenClause: (clauseId: string) => void;
   onSubmit: () => void;
   onPreview?: () => void;
 }) {
@@ -116,7 +116,7 @@ export function ArtifactPanel({
                 return (
                   <button
                     key={c.id}
-                    onClick={() => onAskAbout(`§${c.number} ${c.title}`)}
+                    onClick={() => onOpenClause(c.id)}
                     className="group relative w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-accent/60"
                   >
                     {flagged && (
@@ -126,6 +126,7 @@ export function ArtifactPanel({
                       <span className="w-4 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground/55">{c.number}</span>
                       <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.title}</span>
                       {c.status !== "standard" && <ClauseStatusBadge status={c.status} />}
+                      <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
                     <p className="mt-0.5 line-clamp-1 pl-[26px] text-[12.5px] leading-relaxed text-muted-foreground/80">{c.body || "Empty clause"}</p>
                   </button>
