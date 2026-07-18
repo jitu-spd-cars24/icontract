@@ -364,16 +364,28 @@ export function MerlinChat({
               </div>
             </div>
           )}
+
+          {/* Quick replies — live in the conversation, under Merlin's latest turn */}
+          {!typing && chips.length > 0 && messages.length > 0 &&
+            messages[messages.length - 1].role === "merlin" &&
+            !messages[messages.length - 1].streaming && (
+              <div className="-mt-2 mb-2 flex flex-wrap gap-2 pl-10 animate-in-up">
+                {chips.map((s) => (
+                  <button
+                    key={s}
+                    onClick={() => send(s)}
+                    className="press rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-[13px] text-muted-foreground shadow-xs transition-all hover:-translate-y-px hover:border-merlin-border hover:text-foreground hover:shadow-sm"
+                  >
+                    {s}
+                  </button>
+                ))}
+              </div>
+            )}
         </div>
       </div>
 
       <div className="border-t border-border bg-background">
         <div className="mx-auto max-w-2xl px-4 py-3">
-          <div className="mb-2.5 flex flex-wrap gap-2">
-            {chips.map((s) => (
-              <button key={s} onClick={() => send(s)} className="press rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-[13px] text-muted-foreground shadow-xs transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm">{s}</button>
-            ))}
-          </div>
           <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-sm transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
             {/* attachment preview */}
             {attachments.length > 0 && (
