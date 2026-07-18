@@ -83,23 +83,24 @@ export function ArtifactPanel({
         <Progress value={health.score} tone={health.score >= 90 ? "success" : health.score >= 70 ? "primary" : "warning"} className="mt-1.5" />
       </div>
 
-      {/* tabs */}
-      <div className="flex gap-1 border-b border-border px-3 py-2">
+      {/* tabs — underline style */}
+      <div className="flex gap-5 border-b border-border px-4">
         {(["document", "metadata"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`rounded-md px-3 py-1.5 text-[13px] font-medium capitalize transition-colors ${
-              tab === t ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+            className={`relative -mb-px py-2.5 text-[13px] font-medium capitalize transition-colors ${
+              tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t}
+            {tab === t && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
           </button>
         ))}
       </div>
 
       {/* body */}
-      <div className="flex-1 overflow-y-auto p-3 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
         {tab === "document" ? (
           clauses.length === 0 ? (
             <div className="grid place-items-center gap-2 py-16 text-center">
@@ -108,37 +109,43 @@ export function ArtifactPanel({
               <p className="max-w-[220px] text-xs text-muted-foreground">As Merlin builds the contract, clauses appear here for you to review.</p>
             </div>
           ) : (
-            <div className="space-y-2">
-              {clauses.map((c) => (
-                <button
-                  key={c.id}
-                  onClick={() => onAskAbout(`§${c.number} ${c.title}`)}
-                  className={`w-full rounded-lg border border-border bg-background p-3 text-left transition-colors hover:border-merlin-border ${c.risk !== "none" ? "border-l-2" : ""}`}
-                  style={c.risk !== "none" ? { borderLeftColor: c.risk === "high" ? "var(--risk-high)" : c.risk === "medium" ? "var(--risk-med)" : "var(--risk-low)" } : undefined}
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="font-mono text-[11px] text-muted-foreground tabular-nums">{c.number}</span>
-                    <span className="flex-1 truncate text-[13.5px] font-medium">{c.title}</span>
-                    <ClauseStatusBadge status={c.status} />
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">{c.body || "Empty clause"}</p>
-                </button>
-              ))}
+            <div className="flex flex-col">
+              {clauses.map((c) => {
+                const flagged = c.risk !== "none";
+                const railColor = c.risk === "high" ? "var(--risk-high)" : c.risk === "medium" ? "var(--risk-med)" : "var(--risk-low)";
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => onAskAbout(`§${c.number} ${c.title}`)}
+                    className="group relative w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-accent/60"
+                  >
+                    {flagged && (
+                      <span className="absolute inset-y-2.5 left-0.5 w-[3px] rounded-full" style={{ background: railColor }} />
+                    )}
+                    <div className="flex items-center gap-2.5">
+                      <span className="w-4 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground/55">{c.number}</span>
+                      <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.title}</span>
+                      {c.status !== "standard" && <ClauseStatusBadge status={c.status} />}
+                    </div>
+                    <p className="mt-0.5 line-clamp-1 pl-[26px] text-[12.5px] leading-relaxed text-muted-foreground/80">{c.body || "Empty clause"}</p>
+                  </button>
+                );
+              })}
             </div>
           )
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-5 px-1 pt-1">
             {(["Supplier", "Commercial", "Financial", "Legal", "Renewal", "Compliance"] as const).map((g) => {
               const fields = metadata.filter((f) => f.group === g);
               if (!fields.length) return null;
               return (
                 <div key={g}>
-                  <div className="mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{g}</div>
-                  <div className="overflow-hidden rounded-lg border border-border">
-                    {fields.map((f, i) => (
-                      <div key={f.id} className={`grid grid-cols-2 gap-2 px-3 py-1.5 text-[12.5px] ${i ? "border-t border-border" : ""}`}>
+                  <div className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">{g}</div>
+                  <div className="divide-y divide-border/60">
+                    {fields.map((f) => (
+                      <div key={f.id} className="grid grid-cols-[1fr_1.2fr] gap-3 py-2 text-[13px]">
                         <span className="text-muted-foreground">{f.label}</span>
-                        <span className={`truncate text-right font-medium ${!f.value ? "text-risk-med" : ""}`}>{f.value || "—"}</span>
+                        <span className={`truncate text-right font-medium ${!f.value ? "text-risk-med" : "text-foreground"}`}>{f.value || "Not set"}</span>
                       </div>
                     ))}
                   </div>
