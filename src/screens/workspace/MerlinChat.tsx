@@ -305,10 +305,15 @@ export function MerlinChat({
     <div className="flex h-full min-h-0 flex-col bg-background">
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
         <div className="mx-auto max-w-2xl px-4 py-6">
-          {messages.map((m) =>
-            m.role === "merlin" ? (
-              <div key={m.id} className="mb-6 flex gap-3 animate-in-up">
-                <MerlinMark size={28} active={false} />
+          {messages.map((m, idx) => {
+            const grouped = m.role === "merlin" && messages[idx - 1]?.role === "merlin";
+            return m.role === "merlin" ? (
+              <div key={m.id} className={`flex gap-3 animate-in-up ${grouped ? "mb-3" : "mb-6"}`}>
+                {grouped ? (
+                  <span className="w-7 shrink-0" aria-hidden="true" />
+                ) : (
+                  <MerlinMark size={28} active={false} />
+                )}
                 <div className="min-w-0 flex-1">
                   {(m.text || m.streaming) && (
                     <div className="text-[15px] leading-relaxed text-foreground">
@@ -389,8 +394,8 @@ export function MerlinChat({
                 )}
                 {m.text && <div className="max-w-[80%] rounded-2xl rounded-tr-sm bg-primary px-4 py-2.5 text-[15px] leading-relaxed text-primary-foreground">{m.text}</div>}
               </div>
-            )
-          )}
+            );
+          })}
           {typing && (
             <div className="mb-6 flex items-center gap-3 animate-in-fade">
               <MerlinMark size={28} active />
