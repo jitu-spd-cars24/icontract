@@ -18,9 +18,9 @@
   --popover-foreground: oklch(0.24 0.012 280);
   --muted: oklch(0.966 0.004 280);
   --muted-foreground: oklch(0.545 0.014 280);
-  --border: oklch(0.93 0.005 280);
-  --input: oklch(0.912 0.006 280);
-  --ring: oklch(0.58 0.13 285);
+  --border: oklch(0.93 0.005 300);
+  --input: oklch(0.912 0.006 300);
+  --ring: oklch(0.46 0.2 305);
 
   /* Soft, layered elevation (Stripe/Linear-style) */
   --shadow-xs: 0 1px 2px oklch(0.24 0.02 280 / 0.05);
@@ -36,13 +36,13 @@
   --dur: 200ms;
   --dur-slow: 320ms;
 
-  /* Brand — Zycus indigo/violet (calmed) */
-  --primary: oklch(0.52 0.12 278);
+  /* Brand — Zycus deep violet (#340068) */
+  --primary: #340068;
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.972 0.002 265);
-  --secondary-foreground: oklch(0.32 0.015 278);
-  --accent: oklch(0.965 0.012 285);
-  --accent-foreground: oklch(0.42 0.08 285);
+  --secondary: oklch(0.972 0.003 300);
+  --secondary-foreground: oklch(0.33 0.11 305);
+  --accent: oklch(0.962 0.018 305);
+  --accent-foreground: oklch(0.4 0.16 305);
 
   /* Merlin AI accent — violet (softer) */
   --merlin: oklch(0.56 0.13 298);
@@ -86,7 +86,7 @@
   --muted-foreground: oklch(0.7 0.015 285);
   --border: oklch(1 0 0 / 8%);
   --input: oklch(1 0 0 / 12%);
-  --ring: oklch(0.66 0.14 290);
+  --ring: oklch(0.66 0.17 305);
 
   --shadow-xs: 0 1px 2px oklch(0 0 0 / 0.3);
   --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.35), 0 1px 3px oklch(0 0 0 / 0.3);
@@ -94,12 +94,12 @@
   --shadow-lg: 0 4px 10px oklch(0 0 0 / 0.4), 0 28px 56px -16px oklch(0 0 0 / 0.6);
   --shadow-pop: 0 10px 24px -8px oklch(0 0 0 / 0.55), 0 24px 48px -12px oklch(0 0 0 / 0.65);
 
-  --primary: oklch(0.7 0.11 290);
-  --primary-foreground: oklch(0.16 0.02 285);
-  --secondary: oklch(0.27 0.012 265);
-  --secondary-foreground: oklch(0.96 0.003 265);
-  --accent: oklch(0.3 0.022 285);
-  --accent-foreground: oklch(0.92 0.015 285);
+  --primary: oklch(0.64 0.18 305);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.27 0.012 300);
+  --secondary-foreground: oklch(0.95 0.004 300);
+  --accent: oklch(0.32 0.045 305);
+  --accent-foreground: oklch(0.88 0.05 305);
 
   --merlin: oklch(0.72 0.12 300);
   --merlin-foreground: oklch(0.16 0.02 300);
