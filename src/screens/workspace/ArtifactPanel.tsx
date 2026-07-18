@@ -17,7 +17,7 @@ export function ArtifactPanel({
   onSubmit: () => void;
   onPreview?: () => void;
 }) {
-  const { clauses, metadata, insights, isBlank, intakeMode } = useStore();
+  const { clauses, metadata, insights, isBlank, intakeMode, submitted } = useStore();
   const health = useHealth();
   const [tab, setTab] = React.useState<"document" | "metadata">("document");
 
@@ -27,8 +27,9 @@ export function ArtifactPanel({
     { label: "Details", done: filled >= 6 },
     { label: "Draft", done: clauses.length > 0 },
     { label: "Risks", done: clauses.length > 0 && openRisks === 0 },
-    { label: "Approval", done: health.ready },
+    { label: "Approval", done: submitted },
   ];
+  const statusText = submitted ? "in approval" : "draft";
 
   return (
     <aside className="hidden w-[380px] shrink-0 flex-col border-l border-border bg-card lg:flex">
@@ -39,8 +40,10 @@ export function ArtifactPanel({
           <div className="truncate text-sm font-semibold leading-tight">
             {isBlank ? "Untitled agreement" : "Purchase Agreement"}
           </div>
-          <div className="text-[11px] text-muted-foreground leading-tight">
-            {isBlank ? "Artifact · draft" : `${CONTRACT.id} · draft`}
+          <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground">
+            <span>{isBlank ? "Artifact" : CONTRACT.id}</span>
+            <span>·</span>
+            <span className={submitted ? "font-medium text-success" : ""}>{statusText}</span>
           </div>
         </div>
         {onPreview && (
@@ -61,7 +64,9 @@ export function ArtifactPanel({
       <div className="border-b border-border px-4 py-3">
         <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           <span>Progress</span>
-          <Badge tone={health.ready ? "low" : "med"}>{health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}</Badge>
+          <Badge tone={submitted ? "primary" : health.ready ? "low" : "med"}>
+            {submitted ? "In approval" : health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}
+          </Badge>
         </div>
         <div className="mt-2.5 flex items-center">
           {steps.map((s, i) => (
@@ -166,12 +171,21 @@ export function ArtifactPanel({
             <Eye className="size-4" /> Preview
           </button>
         )}
-        <button
-          onClick={onSubmit}
-          className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        >
-          <ShieldCheck className="size-4" /> Submit for approval
-        </button>
+        {submitted ? (
+          <button
+            onClick={onSubmit}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-success/40 bg-risk-low-soft/60 px-4 py-2.5 text-sm font-medium text-success transition-colors hover:bg-risk-low-soft"
+          >
+            <Check className="size-4" /> In approval · Stage 1 of 4
+          </button>
+        ) : (
+          <button
+            onClick={onSubmit}
+            className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+          >
+            <ShieldCheck className="size-4" /> Submit for approval
+          </button>
+        )}
       </div>
     </aside>
   );

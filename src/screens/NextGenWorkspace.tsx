@@ -21,7 +21,7 @@ type View = "home" | "chat";
 
 export function NextGenWorkspace() {
   const store = useStore();
-  const { theme, toggleTheme, setAppMode, startMerlinIntake, startDraft, startBlank } = store;
+  const { theme, toggleTheme, setAppMode, startMerlinIntake, startDraft, startBlank, submitted } = store;
   const health = useHealth();
 
   const [view, setView] = React.useState<View>("home");
@@ -108,8 +108,11 @@ export function NextGenWorkspace() {
             <button onClick={() => setView("home")} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Back to home"><ArrowLeft className="size-4" /></button>
             <MerlinMark size={26} />
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold leading-tight">{title}</div>
-              <div className="truncate text-[11px] text-muted-foreground leading-tight">Health {health.score}/100</div>
+              <div className="flex items-center gap-2">
+                <span className="truncate text-sm font-semibold leading-tight">{title}</span>
+                {submitted && <Badge tone="low"><Check className="size-3" /> In approval</Badge>}
+              </div>
+              <div className="truncate text-[11px] text-muted-foreground leading-tight">Health {health.score}/100{submitted ? " · routed to 4 approvers" : ""}</div>
             </div>
             <div className="ml-auto flex items-center gap-1.5">
               <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>

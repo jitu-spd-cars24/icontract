@@ -20,7 +20,7 @@ type Stage = "readiness" | "route" | "signing" | "done";
 
 export function ApprovalModal({ onClose }: { onClose: () => void }) {
   const health = useHealth();
-  const { logActivity, toast, insights } = useStore();
+  const { logActivity, toast, insights, submitForApproval } = useStore();
   const [stage, setStage] = React.useState<Stage>("readiness");
   const [delegate, setDelegate] = React.useState(false);
   const [signing, setSigning] = React.useState(false);
@@ -43,6 +43,7 @@ export function ApprovalModal({ onClose }: { onClose: () => void }) {
     setTimeout(() => {
       setSigning(false);
       setStage("done");
+      submitForApproval();
       logActivity({
         actor: "Jitendra Kumar",
         action: "submitted for approval & routed to e-sign",

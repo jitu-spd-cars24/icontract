@@ -42,6 +42,8 @@ interface Store {
   isBlank: boolean;
   intakeMode: boolean;
   workspaceMode: "chat" | "document";
+  submitted: boolean;
+  submitForApproval: () => void;
   duplicatedFrom: string | null;
   startDraft: (opts?: { duplicatedFrom?: string }) => void;
   startBlank: () => void;
@@ -146,6 +148,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
   const [isBlank, setIsBlank] = React.useState(false);
   const [intakeMode, setIntakeMode] = React.useState(false);
   const [workspaceMode, setWorkspaceMode] = React.useState<"chat" | "document">("chat");
+  const [submitted, setSubmitted] = React.useState(false);
   const [duplicatedFrom, setDuplicatedFrom] = React.useState<string | null>(null);
 
   React.useEffect(() => {
@@ -328,6 +331,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
       setIsBlank(false);
       setIntakeMode(false);
       setWorkspaceMode("chat");
+      setSubmitted(false);
       setDuplicatedFrom(opts?.duplicatedFrom ?? null);
       setSelectedClauseId(null);
       setEditingClauseId(null);
@@ -348,6 +352,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsBlank(true);
     setIntakeMode(true);
     setWorkspaceMode("chat");
+    setSubmitted(false);
     setDuplicatedFrom(null);
     setSelectedClauseId(null);
     setEditingClauseId(null);
@@ -364,8 +369,13 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsBlank(false);
     setIntakeMode(false);
     setWorkspaceMode("chat");
+    setSubmitted(false);
     setSelectedClauseId(null);
     setEditingClauseId(null);
+  }, []);
+
+  const submitForApproval = React.useCallback(() => {
+    setSubmitted(true);
   }, []);
 
   const startBlank = React.useCallback(() => {
@@ -385,6 +395,7 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     setIsBlank(true);
     setIntakeMode(false);
     setWorkspaceMode("document");
+    setSubmitted(false);
     setDuplicatedFrom(null);
     setSelectedClauseId(null);
     setEditingClauseId(null);
@@ -573,6 +584,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
     isBlank,
     intakeMode,
     workspaceMode,
+    submitted,
+    submitForApproval,
     duplicatedFrom,
     startDraft,
     startBlank,
