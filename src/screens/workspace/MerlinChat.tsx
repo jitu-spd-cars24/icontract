@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/primitives";
 import { MerlinMark, ConfidenceMeter } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
-import { CONTRACT, INSIGHTS } from "@/lib/data";
-import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, FilePlus2 } from "lucide-react";
+import { CONTRACT, INSIGHTS, STANDARD_FIX } from "@/lib/data";
+import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, FilePlus2, GitCompare, Minus, Plus } from "lucide-react";
 
 interface Card {
   kind: "risk" | "missing";
@@ -20,12 +20,18 @@ interface Attachment {
   kind: "image" | "pdf" | "doc" | "file";
   size: string;
 }
+interface Diff {
+  title: string;
+  before: string;
+  after: string;
+}
 interface Msg {
   id: string;
   role: "merlin" | "user";
   text?: string;
   cards?: Card[];
   files?: Attachment[];
+  diff?: Diff;
   streaming?: boolean;
 }
 
@@ -105,7 +111,7 @@ export function MerlinChat({
   sessionKey: string | number;
   onOpenApproval: () => void;
 }) {
-  const { isBlank, intakeMode, insights, resolveInsight, insertMissingClause, updateField, generateFromIntake } = useStore();
+  const { isBlank, intakeMode, insights, clauses, resolveInsight, insertMissingClause, updateField, generateFromIntake } = useStore();
   const health = useHealth();
 
   const [messages, setMessages] = React.useState<Msg[]>([]);
@@ -173,8 +179,8 @@ export function MerlinChat({
   }, [messages, typing]);
 
   const push = (m: Msg) => setMessages((prev) => [...prev, m]);
-  // Streamed reply — brief "thinking", then reveal word-by-word; cards land after
-  function merlinReply(text: string, cards?: Card[]) {
+  // Streamed reply — brief "thinking", then reveal word-by-word; cards/diff land after
+  function merlinReply(text: string, cards?: Card[], diff?: Diff) {
     setTyping(true);
     const id = uid();
     window.setTimeout(() => {
@@ -188,15 +194,32 @@ export function MerlinChat({
         setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: partial } : m)));
         if (i >= words.length) {
           window.clearInterval(iv);
-          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, streaming: false, cards } : m)));
+          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, streaming: false, cards, diff } : m)));
         }
       }, 20);
     }, 360);
   }
 
   function handleCard(card: Card) {
-    if (card.kind === "risk") { resolveInsight(card.refId, "accept"); merlinReply(`Done — applied the policy-standard fix to “${card.title}” and logged it. Your health score is climbing.`); }
-    else { insertMissingClause(card.refId); merlinReply(`Added “${card.title}” — drafted from the standard and flagged for your review. Nothing's final until you approve.`); }
+    if (card.kind === "risk") {
+      // Capture the before/after BEFORE the store mutates, so we can show the change
+      const insight = insights.find((i) => i.id === card.refId);
+      const clause = clauses.find((c) => c.id === insight?.clauseId);
+      const before = clause?.body ?? "";
+      const after =
+        clause?.variants?.find((v) => v.kind === "standard")?.body ??
+        (insight?.clauseId ? STANDARD_FIX[insight.clauseId] : undefined) ??
+        before;
+      resolveInsight(card.refId, "accept");
+      merlinReply(
+        `Applied the policy-standard fix to “${card.title}”. Here's exactly what changed — nothing else in the clause was touched, and it's saved to version history so you can revert:`,
+        undefined,
+        clause ? { title: `§${clause.number} ${clause.title}`, before, after } : undefined
+      );
+    } else {
+      insertMissingClause(card.refId);
+      merlinReply(`Added “${card.title}” — drafted from the standard and flagged for your review. Nothing's final until you approve.`);
+    }
     setMessages((prev) => prev.map((m) => (m.cards ? { ...m, cards: m.cards.map((c) => (c.refId === card.refId ? { ...c, done: true } : c)) } : m)));
   }
 
@@ -329,6 +352,24 @@ export function MerlinChat({
                           </div>
                         );
                       })}
+                    </div>
+                  )}
+                  {m.diff && (
+                    <div className="mt-3 animate-in-up rounded-[18px] border border-border/60 bg-card p-4 shadow-xs">
+                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        <GitCompare className="size-3.5" /> {m.diff.title} · change
+                      </div>
+                      <div className="mt-3 space-y-2.5">
+                        <div className="rounded-xl bg-risk-high-soft/50 p-3">
+                          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-risk-high"><Minus className="size-3" /> Before</div>
+                          <p className="text-[13.5px] leading-relaxed text-muted-foreground">{m.diff.before}</p>
+                        </div>
+                        <div className="rounded-xl bg-risk-low-soft/60 p-3">
+                          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-success"><Plus className="size-3" /> After · policy standard</div>
+                          <p className="text-[13.5px] leading-relaxed text-foreground">{m.diff.after}</p>
+                        </div>
+                      </div>
+                      <div className="mt-2.5 text-[11px] text-muted-foreground/75">Saved to version history · revert anytime</div>
                     </div>
                   )}
                 </div>

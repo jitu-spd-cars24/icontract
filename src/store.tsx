@@ -5,6 +5,7 @@ import {
   INSIGHTS,
   COMMENTS,
   ACTIVITY,
+  STANDARD_FIX,
 } from "@/lib/data";
 import type {
   Clause,
@@ -241,7 +242,8 @@ export function StoreProvider({ children }: { children: React.ReactNode }) {
                 nonStandard: false,
               };
             }
-            return { ...c, status: "approved", risk: "low", nonStandard: false };
+            const fix = STANDARD_FIX[c.id];
+            return { ...c, body: fix ?? c.body, status: "approved", risk: "low", nonStandard: false };
           })
         );
       }

@@ -316,6 +316,13 @@ export const CLAUSES: Clause[] = [
   },
 ];
 
+/* The policy-standard replacement text applied when a risk fix is accepted */
+export const STANDARD_FIX: Record<string, string> = {
+  c4: "Buyer shall pay all undisputed invoices within forty-five (45) days of the invoice date (Net 45).",
+  c7: "Supplier shall indemnify Buyer against third-party claims arising from the goods. Liability shall be uncapped for claims relating to intellectual-property infringement and personal injury; for all other claims it is capped at the total fees paid under this Agreement in the preceding twelve (12) months.",
+  c9: "Either Party may terminate this Agreement for convenience upon sixty (60) days' written notice. Buyer may terminate for material breach only if the breach remains uncured thirty (30) days after written notice.",
+};
+
 /* Missing clauses Merlin recommends inserting */
 export const MISSING_CLAUSES = [
   {
