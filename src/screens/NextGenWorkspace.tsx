@@ -17,7 +17,7 @@ import {
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight,
   CheckSquare, Building2, TrendingUp, Eye, PanelLeftClose, PanelLeftOpen, ShieldAlert,
   WandSparkles, SlidersHorizontal, Folder, ChevronDown, ChevronRight, Pin,
-  Clock, MoreHorizontal,
+  Clock, MoreHorizontal, Flag, User, ListChecks, BarChart3,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -34,26 +34,32 @@ function compactContractLabel(title: string) {
 const MERLIN_HOME_UPDATES = [
   {
     id: "priority",
-    label: "Suggested next move",
+    label: "Action needed",
     title: "ABC Manufacturing can be approval-ready today",
-    detail: "Resolve the Net 90 payment term and Merlin expects the draft health to move from 72 to 84.",
-    metric: "72 -> 84",
-    metricLabel: "health lift",
+    detail: "Resolve the Net 90 payment term and draft health moves from 72 to 84.",
+    context: "ABC Manufacturing",
+    subtitle: "Purchase Agreement",
+    date: "Due today",
+    priority: "High" as const,
+    progress: 72,
+    tasks: { done: 18, total: 25 },
     tone: "high" as const,
-    icon: ShieldAlert,
     cta: "Open draft",
     onSelectStatus: "Draft" as const,
     onSelectTitle: "ABC Manufacturing — Purchase Agreement",
   },
   {
     id: "approval",
-    label: "Approval update",
+    label: "In approval",
     title: "Cloudspring is waiting on finance sign-off",
-    detail: "One approver decision will move the MSA into the final signature route.",
-    metric: "1",
-    metricLabel: "decision left",
+    detail: "One approver decision moves the MSA into the final signature route.",
+    context: "Cloudspring Technologies",
+    subtitle: "Master Services Agreement",
+    date: "2h ago",
+    priority: "Medium" as const,
+    progress: 96,
+    tasks: { done: 3, total: 4 },
     tone: "primary" as const,
-    icon: CheckSquare,
     cta: "Review route",
     onSelectStatus: "In Approval" as const,
     onSelectTitle: "Cloudspring Technologies — MSA",
@@ -62,11 +68,14 @@ const MERLIN_HOME_UPDATES = [
     id: "pattern",
     label: "Merlin insight",
     title: "Payment terms are the main portfolio pattern this week",
-    detail: "3 recent drafts pushed beyond the Net 45 standard. Merlin recommends starting with the fallback clause set.",
-    metric: "3",
-    metricLabel: "drafts flagged",
+    detail: "3 recent drafts pushed beyond the Net 45 standard. Start with the fallback set.",
+    context: "Portfolio signal",
+    subtitle: "3 drafts flagged",
+    date: "This week",
+    priority: "Low" as const,
+    progress: 68,
+    tasks: { done: 9, total: 12 },
     tone: "merlin" as const,
-    icon: Sparkles,
     cta: "Use suggestion",
     onSelectStatus: "Draft" as const,
     onSelectTitle: "Apex Digital — Statement of Work",
@@ -508,40 +517,82 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
               View more <ArrowRight className="size-3.5" />
             </button>
           </div>
-          <div className="grid gap-3 lg:grid-cols-3">
-            {MERLIN_HOME_UPDATES.map((item, index) => {
-              const Icon = item.icon;
-              // colour only where it means something: risk = red; otherwise neutral
-              const toneClass =
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {MERLIN_HOME_UPDATES.map((item) => {
+              const toneColor =
+                item.tone === "high"
+                  ? "var(--risk-high)"
+                  : item.tone === "merlin"
+                  ? "var(--merlin)"
+                  : "var(--primary)";
+              const pillClass =
                 item.tone === "high"
                   ? "bg-risk-high-soft text-risk-high"
-                  : "bg-muted text-muted-foreground";
+                  : item.tone === "merlin"
+                  ? "bg-merlin-soft text-merlin"
+                  : "bg-primary/10 text-primary";
+              const ring = `conic-gradient(${toneColor} ${item.progress * 3.6}deg, color-mix(in oklch, var(--muted-foreground) 22%, transparent) 0deg)`;
 
               return (
                 <button
                   key={item.id}
                   onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
-                  className="group relative flex min-h-[184px] flex-col rounded-2xl border border-border/50 bg-muted/40 p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  className="group relative flex flex-col rounded-2xl border border-border/60 bg-card p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${toneClass}`}>
-                      <Icon className="size-4" />
+                  {/* header: folder + status pill */}
+                  <div className="flex items-start justify-between">
+                    <span className="text-muted-foreground/70"><Folder className="size-[22px]" strokeWidth={1.75} /></span>
+                    <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[12px] font-semibold ${pillClass}`}>
+                      <span className="size-1.5 rounded-full" style={{ background: toneColor }} />
+                      {item.label}
                     </span>
-                    <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
                   </div>
 
-                  <div className="mt-6 flex items-end gap-2">
-                    <span className="text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{item.metric}</span>
-                    <span className="pb-0.5 text-[12px] font-medium text-muted-foreground">{item.metricLabel}</span>
+                  {/* title + description */}
+                  <div className="mt-3.5">
+                    <div className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-foreground">{item.title}</div>
+                    <p className="mt-1.5 line-clamp-1 text-[13.5px] leading-relaxed text-muted-foreground">{item.detail}</p>
                   </div>
 
-                  <div className="mt-2.5 flex-1">
-                    <div className="text-[15px] font-medium leading-snug text-foreground/90">{item.title}</div>
+                  {/* context meta */}
+                  <div className="mt-3 flex items-center gap-1.5 text-[13px] text-muted-foreground">
+                    <User className="size-4 shrink-0 opacity-70" />
+                    <span className="truncate">{item.context}</span>
+                    <span className="opacity-50">·</span>
+                    <span className="truncate">{item.subtitle}</span>
                   </div>
 
-                  <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
-                    {item.cta} <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                  </span>
+                  {/* date + priority */}
+                  <div className="mt-2.5 flex items-center justify-between text-[13px] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Flag className="size-4 shrink-0 opacity-70" /> {item.date}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                      <BarChart3 className="size-4 opacity-80" /> {item.priority}
+                    </span>
+                  </div>
+
+                  <div className="my-4 h-px bg-border/70" />
+
+                  {/* footer: progress + tasks + merlin mark */}
+                  <div className="flex items-center gap-4">
+                    <span className="inline-flex items-center gap-2">
+                      <span
+                        className="size-[18px] shrink-0 rounded-full"
+                        style={{
+                          background: ring,
+                          WebkitMask: "radial-gradient(farthest-side, transparent 55%, #000 57%)",
+                          mask: "radial-gradient(farthest-side, transparent 55%, #000 57%)",
+                        }}
+                      />
+                      <span className="text-[13.5px] font-semibold tabular-nums text-foreground">{item.progress}%</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground">
+                      <ListChecks className="size-4 opacity-70" />
+                      <span className="tabular-nums">{item.tasks.done}/{item.tasks.total}</span> checks
+                    </span>
+                    <span className="ml-auto"><MerlinMark size={26} /></span>
+                  </div>
                 </button>
               );
             })}
@@ -700,8 +751,8 @@ function MerlinInsightsView({ onBack, onOpen }: {
                     onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
                     className="rounded-2xl border border-border/70 bg-background/70 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:bg-card"
                   >
-                    <div className="text-xl font-semibold tabular-nums">{item.metric}</div>
-                    <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">{item.metricLabel}</div>
+                    <div className="text-xl font-semibold tabular-nums">{item.progress}%</div>
+                    <div className="mt-1 text-[11px] font-medium text-muted-foreground">{item.subtitle}</div>
                     <div className="mt-2 line-clamp-2 text-[13px] font-medium leading-snug">{item.title}</div>
                   </button>
                 ))}
