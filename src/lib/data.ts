@@ -468,6 +468,37 @@ export const RECENT_CONTRACTS = [
   { id: "MSA-2026-02566", title: "Asterix Solutions — MSA", status: "Signed", risk: "low", value: "₹1.22 Cr", updated: "3 weeks ago", health: 100, isDraft: false },
 ];
 
+/* Sidebar projects — grouped contract workspaces */
+export const PROJECTS = [
+  {
+    id: "prj-abc",
+    name: "ABC Manufacturing",
+    pinned: true,
+    items: [
+      { id: "PA-2026-04417", title: "Purchase Agreement", status: "Draft" },
+      { id: "AMD-2026-00218", title: "Pricing Amendment", status: "Draft" },
+    ],
+  },
+  {
+    id: "prj-onboarding",
+    name: "Q2 Supplier Onboarding",
+    pinned: false,
+    items: [
+      { id: "MSA-2026-03310", title: "Cloudspring — MSA", status: "In Approval" },
+      { id: "NDA-2026-09077", title: "Vertex Systems — NDA", status: "Signed" },
+    ],
+  },
+  {
+    id: "prj-renewals",
+    name: "Compliance Renewals",
+    pinned: false,
+    items: [
+      { id: "DPA-2026-01872", title: "DataCore — DPA", status: "In Review" },
+      { id: "SLA-2026-02041", title: "Infranet — SLA", status: "In Review" },
+    ],
+  },
+];
+
 /* Contracts available to duplicate from */
 export const DUPLICATABLE = [
   { id: "PA-2026-04390", title: "Orbit Components — Purchase Agreement", type: "Purchase Agreement", supplier: "Orbit Components", value: "₹1.20 Cr", region: "India", clauses: 11, updated: "2 days ago", status: "In Review" },

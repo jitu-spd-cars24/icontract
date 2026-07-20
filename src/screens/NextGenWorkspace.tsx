@@ -10,13 +10,14 @@ import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
 import { ContractPreview } from "./workspace/ContractPreview";
 import { ClauseDetail } from "./workspace/ClauseDetail";
-import { RECENT_CONTRACTS, PENDING_APPROVALS, RECENT_SUPPLIERS } from "@/lib/data";
+import { RECENT_CONTRACTS, PENDING_APPROVALS, RECENT_SUPPLIERS, PROJECTS } from "@/lib/data";
 import type { RiskLevel } from "@/lib/types";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight,
   CheckSquare, Building2, TrendingUp, Eye, PanelLeftClose, PanelLeftOpen, ShieldAlert,
-  WandSparkles, SlidersHorizontal,
+  WandSparkles, SlidersHorizontal, SquarePen, Folder, ChevronDown, ChevronRight, Pin,
+  Clock, MoreHorizontal,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -88,6 +89,10 @@ export function NextGenWorkspace() {
   const [openClauseId, setOpenClauseId] = React.useState<string | null>(null);
   const [homeInput, setHomeInput] = React.useState("");
   const [leftCollapsed, setLeftCollapsed] = React.useState(false);
+  const [openProjects, setOpenProjects] = React.useState<Record<string, boolean>>(
+    () => Object.fromEntries(PROJECTS.map((p) => [p.id, p.pinned]))
+  );
+  const [activeId, setActiveId] = React.useState<string | null>(null);
 
   function beginSession(name: string) {
     setTitle(name);
@@ -105,10 +110,11 @@ export function NextGenWorkspace() {
     else if (method === "duplicate") { startDraft({ duplicatedFrom: "Nimbus Steel — Purchase Agreement" }); beginSession("Copy · Purchase Agreement"); }
     else { startDraft(); beginSession(method === "template" ? "New · from template" : "Imported paper"); }
   }
-  function openContract(contract: Pick<RecentContract, "title" | "status">) {
+  function openContract(contract: Pick<RecentContract, "title" | "status"> & { id?: string }) {
     startDraft();
     const nextStatus = (contract.status as SessionStatus) ?? "Draft";
     setSessionStatus(nextStatus);
+    if (contract.id) setActiveId(contract.id);
     if (nextStatus === "In Approval") submitForApproval();
     beginSession(contract.title);
   }
@@ -227,52 +233,100 @@ export function NextGenWorkspace() {
                 </button>
               </Tooltip>
             </div>
-            <div className="px-3">
-              <Button className="w-full justify-start" onClick={() => setShowStart(true)}>
-                <Plus className="size-4" /> New contract
-              </Button>
-              <div className="relative mt-2">
-                <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input placeholder="Search contracts…" className="h-9 w-full rounded-lg border border-input bg-background pl-8 pr-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
-              </div>
+            {/* New contract — prominent launcher */}
+            <div className="px-3 pt-1">
+              <button
+                onClick={() => setShowStart(true)}
+                className="group flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition-colors hover:bg-accent/50"
+              >
+                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-[1.03]">
+                  <SquarePen className="size-[17px]" />
+                </span>
+                <span className="text-[15px] font-medium">New contract</span>
+              </button>
             </div>
-            <div className="mt-3 flex-1 overflow-y-auto px-2 scrollbar-thin">
-              <div className="mb-1.5 flex items-center justify-between px-2 py-1">
-                <SectionLabel>Recent contracts</SectionLabel>
-                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/80">{RECENT_CONTRACTS.length}</span>
-              </div>
-              <div className="space-y-1">
-                {RECENT_CONTRACTS.map((c) => {
-                  const statusClass =
-                    c.status === "Signed"
-                      ? "bg-success"
-                      : c.status === "Draft"
-                      ? "bg-warning"
-                      : c.status === "In Approval"
-                      ? "bg-primary"
-                      : "bg-merlin";
 
+            <div className="mt-3 flex-1 overflow-y-auto px-3 scrollbar-thin">
+              {/* Projects */}
+              <div className="mb-1 flex items-center gap-2 px-1 py-1">
+                <Folder className="size-4 text-muted-foreground" />
+                <span className="flex-1 text-[13px] font-medium text-muted-foreground">Projects</span>
+                <Tooltip content="New project" side="top">
+                  <button className="grid size-5 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" aria-label="New project">
+                    <Plus className="size-3.5" />
+                  </button>
+                </Tooltip>
+              </div>
+              <div className="space-y-0.5">
+                {PROJECTS.map((p) => {
+                  const open = openProjects[p.id];
                   return (
-                    <button
+                    <div key={p.id}>
+                      <button
+                        onClick={() => setOpenProjects((s) => ({ ...s, [p.id]: !s[p.id] }))}
+                        className="group flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left transition-colors hover:bg-accent/45"
+                      >
+                        {p.pinned && (
+                          <Pin className="size-3 shrink-0 -rotate-45 fill-current text-muted-foreground/70" />
+                        )}
+                        <span className="grid size-4 shrink-0 place-items-center text-muted-foreground">
+                          {open ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-foreground">{p.name}</span>
+                      </button>
+                      {open && (
+                        <div className="mb-1 ml-[13px] space-y-0.5 border-l border-border/60 pl-3">
+                          {p.items.map((it) => {
+                            const active = activeId === it.id;
+                            return (
+                              <button
+                                key={it.id}
+                                onClick={() => openContract(it)}
+                                className={`block w-full truncate rounded-lg px-2 py-1.5 text-left text-[13px] transition-colors ${
+                                  active
+                                    ? "font-semibold text-foreground"
+                                    : "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                                }`}
+                              >
+                                {it.title}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Recent */}
+              <div className="mb-1 mt-5 flex items-center gap-2 px-1 py-1">
+                <Clock className="size-4 text-muted-foreground" />
+                <span className="text-[13px] font-medium text-muted-foreground">Recent</span>
+              </div>
+              <div className="space-y-0.5">
+                {RECENT_CONTRACTS.map((c) => {
+                  const active = activeId === c.id;
+                  return (
+                    <div
                       key={c.id}
-                      onClick={() => openContract(c)}
-                      className="group flex w-full items-center gap-2.5 rounded-xl border border-transparent px-2 py-2 text-left transition-colors hover:border-border/70 hover:bg-accent/45"
+                      className="group relative flex items-center rounded-lg transition-colors hover:bg-accent/45"
                     >
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-card">
-                        <FileText className="size-3.5" />
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-[13px] font-medium leading-tight text-foreground">
-                          {c.title}
-                        </span>
-                        <span className="mt-1 flex items-center gap-1.5 text-[11px] leading-none text-muted-foreground">
-                          <span className={`size-1.5 rounded-full ${statusClass}`} />
-                          <span>{c.status}</span>
-                          <span className="text-muted-foreground/60">·</span>
-                          <span>{c.updated}</span>
-                        </span>
-                      </span>
-                    </button>
+                      <button
+                        onClick={() => openContract(c)}
+                        className={`min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-left text-[13px] transition-colors ${
+                          active ? "font-semibold text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                        }`}
+                      >
+                        {c.title}
+                      </button>
+                      <button
+                        className="mr-1 grid size-6 shrink-0 place-items-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100"
+                        aria-label="More options"
+                      >
+                        <MoreHorizontal className="size-4" />
+                      </button>
+                    </div>
                   );
                 })}
               </div>
