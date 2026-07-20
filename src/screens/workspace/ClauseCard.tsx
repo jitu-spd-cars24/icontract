@@ -98,10 +98,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
         ref={ref}
         className="scroll-mt-24 rounded-xl border border-primary bg-card p-5 ring-2 ring-primary/15"
       >
-        <div className="flex items-center gap-2">
-          <span className="font-mono text-xs font-semibold text-muted-foreground tabular-nums">
-            {clause.number}
-          </span>
+        <div className="flex items-center">
           <Input
             autoFocus
             value={draftTitle}
@@ -165,10 +162,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
       )}
 
       {/* header */}
-      <div className="flex items-start gap-3">
-        <span className="mt-0.5 font-mono text-xs font-semibold text-muted-foreground tabular-nums">
-          {clause.number}
-        </span>
+      <div className="flex items-start">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-[15px] font-semibold">{clause.title}</h3>
@@ -194,7 +188,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
 
       {/* body */}
       {clause.body ? (
-        <p className="mt-3 pl-7 text-sm leading-relaxed text-foreground/90">
+        <p className="mt-3 text-sm leading-relaxed text-foreground/90">
           {clause.body}
         </p>
       ) : (
@@ -203,7 +197,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
             e.stopPropagation();
             startEdit();
           }}
-          className="mt-3 ml-7 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-left text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
+          className="mt-3 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2.5 text-left text-xs text-muted-foreground hover:border-primary/40 hover:text-foreground"
         >
           <Pencil className="size-3.5" /> Empty clause — click to write, or ask Merlin to draft it
         </button>
@@ -211,7 +205,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
 
       {/* Merlin inline insight */}
       {clause.merlinNote && (
-        <div className="mt-3 ml-7 rounded-lg border border-merlin-border bg-merlin-soft/40 p-3">
+        <div className="mt-3 rounded-lg border border-merlin-border bg-merlin-soft/40 p-3">
           <div className="flex items-start gap-2.5">
             <MerlinMark size={24} />
             <div className="flex-1">
@@ -279,7 +273,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
 
       {/* variant swapper */}
       {showVariants && clause.variants && (
-        <div className="mt-3 ml-7 space-y-1.5 rounded-lg border border-border bg-muted/30 p-2 animate-in-up">
+        <div className="mt-3 space-y-1.5 rounded-lg border border-border bg-muted/30 p-2 animate-in-up">
           <div className="px-1 py-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
             Clause library · variants
           </div>
@@ -322,7 +316,7 @@ export function ClauseCard({ clause }: { clause: Clause }) {
       )}
 
       {/* footer */}
-      <div className="mt-3 flex items-center gap-3 pl-7 text-[11px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 has-[:focus]:opacity-100">
+      <div className="mt-3 flex items-center gap-3 text-[11px] text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 has-[:focus]:opacity-100">
         <button
           className="inline-flex items-center gap-1 hover:text-foreground"
           onClick={(e) => {

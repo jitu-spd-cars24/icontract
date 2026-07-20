@@ -25,11 +25,6 @@ type RecentContract = (typeof RECENT_CONTRACTS)[number];
 type SessionStatus = "Draft" | "In Review" | "In Approval" | "Signed";
 type ContractStatusFilter = "All" | SessionStatus;
 
-function compactContractLabel(title: string) {
-  const parts = title.split("—")[0].trim().split(/\s+/).slice(0, 2);
-  return parts.map((part) => part[0]).join("").toUpperCase();
-}
-
 const MERLIN_HOME_UPDATES = [
   {
     id: "priority",
@@ -97,10 +92,28 @@ export function NextGenWorkspace() {
   const [openClauseId, setOpenClauseId] = React.useState<string | null>(null);
   const [homeInput, setHomeInput] = React.useState("");
   const [leftCollapsed, setLeftCollapsed] = React.useState(false);
+  const [sidebarQuery, setSidebarQuery] = React.useState("");
   const [openProjects, setOpenProjects] = React.useState<Record<string, boolean>>(
     () => Object.fromEntries(PROJECTS.map((p) => [p.id, p.pinned]))
   );
   const [activeId, setActiveId] = React.useState<string | null>(null);
+  const normalizedSidebarQuery = sidebarQuery.trim().toLowerCase();
+  const visibleProjects = normalizedSidebarQuery
+    ? PROJECTS.map((project) => {
+        const projectMatches = project.name.toLowerCase().includes(normalizedSidebarQuery);
+        const items = projectMatches
+          ? project.items
+          : project.items.filter((item) => item.title.toLowerCase().includes(normalizedSidebarQuery));
+        return { ...project, items };
+      }).filter((project) => project.items.length > 0 || project.name.toLowerCase().includes(normalizedSidebarQuery))
+    : PROJECTS;
+  const visibleRecentContracts = normalizedSidebarQuery
+    ? RECENT_CONTRACTS.filter((contract) =>
+        contract.title.toLowerCase().includes(normalizedSidebarQuery) ||
+        contract.status.toLowerCase().includes(normalizedSidebarQuery)
+      )
+    : RECENT_CONTRACTS;
+  const hasSidebarResults = visibleProjects.length > 0 || visibleRecentContracts.length > 0;
 
   function beginSession(name: string) {
     setTitle(name);
@@ -137,134 +150,87 @@ export function NextGenWorkspace() {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* ===== LEFT SIDEBAR ===== */}
-      <aside className={`hidden shrink-0 flex-col border-r border-border bg-card transition-[width] duration-200 md:flex ${leftCollapsed ? "w-[84px]" : "w-64"}`}>
+      <aside className={`hidden shrink-0 flex-col transition-[width] duration-200 md:flex ${
+        leftCollapsed
+          ? "w-14 bg-transparent pt-4"
+          : "my-3 ml-3 h-[calc(100vh-1.5rem)] w-[292px] overflow-hidden rounded-[28px] border border-border/70 bg-card/95 shadow-[0_24px_80px_rgba(15,15,25,0.12)] backdrop-blur-xl"
+      }`}>
         {leftCollapsed ? (
-          <>
-            <div className="flex flex-col items-center gap-3 px-3 py-4">
-              <button onClick={() => setView("home")} aria-label="Home"><Logo collapsed /></button>
-              <div className="flex justify-center">
-                <Tooltip content="Expand panel" side="right">
-                  <button
-                    onClick={() => setLeftCollapsed(false)}
-                    className="grid size-10 place-items-center rounded-xl text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                    aria-label="Expand sidebar"
-                  >
-                    <PanelLeftOpen className="size-4" />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
-
-            <div className="border-t border-border/70 px-3 pt-4">
-              <div className="flex justify-center">
-                <Tooltip content="New contract" side="right">
-                  <button
-                    onClick={() => setShowStart(true)}
-                    className="grid size-12 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-xs transition-transform hover:scale-[1.02]"
-                    aria-label="New contract"
-                  >
-                    <Plus className="size-4" />
-                  </button>
-                </Tooltip>
-              </div>
-            </div>
-
-            <div className="mt-4 flex-1 overflow-y-auto px-3 scrollbar-thin">
-              <div className="mb-3 h-px bg-border/70" />
-              <div className="space-y-3">
-                {RECENT_CONTRACTS.slice(0, 8).map((c) => (
-                  <div key={c.id} className="flex justify-center">
-                    <Tooltip content={c.title} side="right">
-                      <button
-                        onClick={() => openContract(c)}
-                        className="relative grid size-12 place-items-center rounded-2xl border border-border/70 bg-background text-[11px] font-semibold text-muted-foreground transition-colors hover:border-primary/30 hover:bg-accent/50 hover:text-foreground"
-                        aria-label={c.title}
-                      >
-                        <span>{compactContractLabel(c.title)}</span>
-                        <span
-                          className={`absolute right-1.5 top-1.5 size-1.5 rounded-full ${
-                            c.status === "Signed"
-                              ? "bg-success"
-                              : c.status === "Draft"
-                              ? "bg-warning"
-                              : "bg-primary"
-                          }`}
-                        />
-                      </button>
-                    </Tooltip>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="border-t border-border/70 px-3 py-4">
-              <div className="flex flex-col items-center gap-2">
-                <div className="flex justify-center">
-                  <Tooltip content="Switch experience" side="right">
-                    <button
-                      onClick={() => setAppMode("chooser")}
-                      className="grid size-10 place-items-center rounded-xl text-muted-foreground hover:bg-accent/50"
-                      aria-label="Switch experience"
-                    >
-                      <ArrowLeft className="size-4" />
-                    </button>
-                  </Tooltip>
-                </div>
-                <div className="flex justify-center">
-                  <Tooltip content={theme === "light" ? "Dark mode" : "Light mode"} side="right">
-                    <button
-                      onClick={toggleTheme}
-                      className="grid size-10 place-items-center rounded-xl text-muted-foreground hover:bg-accent/50"
-                      aria-label="Toggle theme"
-                    >
-                      {theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}
-                    </button>
-                  </Tooltip>
-                </div>
-                <div className="flex justify-center pt-2">
-                  <Avatar name="Jitendra Kumar" className="size-10" />
-                </div>
-              </div>
-            </div>
-          </>
+          <button
+            onClick={() => setLeftCollapsed(false)}
+            className="ml-3 grid size-10 place-items-center rounded-xl border border-border/70 bg-card/95 text-muted-foreground shadow-sm backdrop-blur-xl transition-colors hover:bg-accent hover:text-foreground"
+            aria-label="Expand sidebar"
+          >
+            <PanelLeftOpen className="size-4" />
+          </button>
         ) : (
           <>
-            <div className="flex items-center gap-2 px-3 py-3">
-              <button onClick={() => setView("home")} aria-label="Home"><Logo /></button>
-              <Tooltip content="Collapse panel" side="right">
+            <div className="relative flex h-[76px] items-center px-5">
+              <button onClick={() => setView("home")} className="min-w-0 pr-10" aria-label="Home"><Logo /></button>
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
                 <button
                   onClick={() => setLeftCollapsed(true)}
-                  className="ml-auto grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                   aria-label="Collapse sidebar"
                 >
                   <PanelLeftClose className="size-4" />
                 </button>
-              </Tooltip>
+              </div>
             </div>
             {/* New contract — prominent launcher */}
-            <div className="px-3 pt-1">
+            <div className="px-4 pt-1">
               <button
                 onClick={() => setShowStart(true)}
-                className="flex w-full items-center justify-start gap-2 rounded-xl bg-primary px-3.5 py-2.5 text-[14px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.99]"
+                className="flex w-full items-center justify-start gap-2.5 rounded-2xl bg-primary px-4 py-3 text-[14px] font-semibold text-primary-foreground shadow-sm shadow-primary/10 transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.99]"
               >
                 <Plus className="size-[18px]" strokeWidth={2.6} />
                 New contract
               </button>
             </div>
 
-            <div className="mt-3 flex-1 overflow-y-auto px-3 scrollbar-thin">
-              {/* Projects */}
-              <div className="mb-1 flex items-center gap-2 px-1 py-1">
-                <Folder className="size-4 text-muted-foreground" />
-                <span className="flex-1 text-[13px] font-medium text-muted-foreground">Projects</span>
-                <Tooltip content="New project" side="top">
-                  <button className="grid size-5 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" aria-label="New project">
-                    <Plus className="size-3.5" />
+            <div className="px-4 pt-3">
+              <label className="flex h-11 items-center gap-2 rounded-2xl border border-border/80 bg-background/80 px-3.5 text-muted-foreground shadow-xs transition-colors focus-within:border-primary/35 focus-within:bg-card focus-within:text-foreground">
+                <Search className="size-4 shrink-0" />
+                <input
+                  value={sidebarQuery}
+                  onChange={(event) => setSidebarQuery(event.target.value)}
+                  placeholder="Search contracts..."
+                  className="min-w-0 flex-1 bg-transparent text-[13px] font-medium text-foreground outline-none placeholder:text-muted-foreground/70"
+                />
+                {sidebarQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSidebarQuery("")}
+                    className="grid size-5 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+                    aria-label="Clear search"
+                  >
+                    <X className="size-3.5" />
                   </button>
-                </Tooltip>
-              </div>
+                )}
+              </label>
+            </div>
+
+            <div className="mt-4 flex-1 overflow-y-auto px-4 scrollbar-thin">
+              {!hasSidebarResults && (
+                <div className="rounded-xl border border-dashed border-border px-3 py-4 text-center text-[12px] text-muted-foreground">
+                  No contracts found
+                </div>
+              )}
+
+              {/* Projects */}
+              {visibleProjects.length > 0 && (
+                <div className="mb-1 flex items-center gap-2 px-1 py-1">
+                  <Folder className="size-4 text-muted-foreground" />
+                  <span className="flex-1 text-[13px] font-medium text-muted-foreground">Projects</span>
+                  <Tooltip content="New project" side="top">
+                    <button className="grid size-5 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground" aria-label="New project">
+                      <Plus className="size-3.5" />
+                    </button>
+                  </Tooltip>
+                </div>
+              )}
               <div className="space-y-0.5">
-                {PROJECTS.map((p) => {
+                {visibleProjects.map((p) => {
                   const open = openProjects[p.id];
                   return (
                     <div key={p.id}>
@@ -306,12 +272,14 @@ export function NextGenWorkspace() {
               </div>
 
               {/* Recent */}
-              <div className="mb-1 mt-5 flex items-center gap-2 px-1 py-1">
-                <Clock className="size-4 text-muted-foreground" />
-                <span className="text-[13px] font-medium text-muted-foreground">Recent</span>
-              </div>
+              {visibleRecentContracts.length > 0 && (
+                <div className="mb-1 mt-5 flex items-center gap-2 px-1 py-1">
+                  <Clock className="size-4 text-muted-foreground" />
+                  <span className="text-[13px] font-medium text-muted-foreground">Recent</span>
+                </div>
+              )}
               <div className="space-y-0.5">
-                {RECENT_CONTRACTS.map((c) => {
+                {visibleRecentContracts.map((c) => {
                   const active = activeId === c.id;
                   return (
                     <div
@@ -337,8 +305,8 @@ export function NextGenWorkspace() {
                 })}
               </div>
             </div>
-            <div className="border-t border-border p-2">
-              <button onClick={() => setAppMode("chooser")} className="mb-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] text-muted-foreground hover:bg-accent/50">
+            <div className="border-t border-border/70 p-3">
+              <button onClick={() => setAppMode("chooser")} className="mb-2 flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-[13px] text-muted-foreground hover:bg-accent/50">
                 <ArrowLeft className="size-3.5" /> Switch experience
               </button>
               <div className="flex items-center gap-2 px-1 py-1">
@@ -357,11 +325,10 @@ export function NextGenWorkspace() {
       </aside>
 
       {/* ===== CENTER ===== */}
-      <main className="flex min-w-0 flex-1 flex-col">
+      <main className="relative flex min-w-0 flex-1 flex-col overflow-hidden">
         {view === "chat" && (
-          <div className="glass sticky top-0 z-10 flex h-13 items-center gap-2 border-b border-border/60 px-4 py-2.5">
-            <button onClick={() => setView("home")} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Back to home"><ArrowLeft className="size-4" /></button>
-            <MerlinMark size={26} />
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-20 flex h-24 items-start gap-2 bg-gradient-to-b from-background via-background/90 via-55% to-transparent px-4 pt-3">
+            <button onClick={() => setView("home")} className="pointer-events-auto grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Back to home"><ArrowLeft className="size-4" /></button>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <span className="truncate text-sm font-semibold leading-tight">{title}</span>
@@ -376,7 +343,7 @@ export function NextGenWorkspace() {
                 {sessionStatus === "Signed" ? " · executed" : ""}
               </div>
             </div>
-            <div className="ml-auto flex items-center gap-1.5">
+            <div className="pointer-events-auto ml-auto flex items-center gap-1.5">
               <Button variant="outline" size="sm" onClick={() => setShowPreview(true)}>
                 <Eye className="size-3.5" /> Preview contract
               </Button>
@@ -390,7 +357,7 @@ export function NextGenWorkspace() {
         )}
 
         {view === "home" && (
-          <HomeView input={homeInput} setInput={setHomeInput} onSubmit={homeSubmit} onNew={() => setShowStart(true)} onOpen={openContract} onViewInsights={() => setView("insights")} onDraftMerlin={() => startWith("merlin")} theme={theme} toggleTheme={toggleTheme} />
+          <HomeView input={homeInput} setInput={setHomeInput} onSubmit={homeSubmit} onNew={() => setShowStart(true)} onOpen={openContract} onViewInsights={() => setView("insights")} onDraftMerlin={() => startWith("merlin")} theme={theme} toggleTheme={toggleTheme} leftCollapsed={leftCollapsed} />
         )}
         {view === "insights" && (
           <MerlinInsightsView onBack={() => setView("home")} onOpen={openContract} />
@@ -414,13 +381,20 @@ export function NextGenWorkspace() {
 }
 
 /* ---------------- Home ---------------- */
-function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, onDraftMerlin, theme, toggleTheme }: {
+function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, onDraftMerlin, theme, toggleTheme, leftCollapsed }: {
   input: string; setInput: (v: string) => void; onSubmit: () => void; onNew: () => void;
   onOpen: (contract: Pick<RecentContract, "title" | "status">) => void; onViewInsights: () => void; onDraftMerlin: () => void; theme: string; toggleTheme: () => void;
+  leftCollapsed: boolean;
 }) {
   const { toast } = useStore();
+  const [showStickyComposer, setShowStickyComposer] = React.useState(false);
+
+  function handleHomeScroll(event: React.UIEvent<HTMLDivElement>) {
+    setShowStickyComposer(event.currentTarget.scrollTop > 360);
+  }
+
   return (
-    <div className="relative flex-1 overflow-y-auto scrollbar-thin">
+    <div className="relative flex-1 overflow-y-auto scrollbar-thin" onScroll={handleHomeScroll}>
       {/* ambient AI backdrop — covers the top region, dissolves into the canvas */}
       <AmbientBackground className="h-[900px]" />
       {/* mobile top bar */}
@@ -494,6 +468,46 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                   </button>
                 );
               })}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div
+        aria-hidden={!showStickyComposer}
+        className={`fixed bottom-4 left-4 right-4 z-30 transition-all duration-500 ease-out sm:bottom-6 md:right-8 ${
+          leftCollapsed ? "md:left-[calc(56px+2rem)]" : "md:left-[calc(292px+2rem)]"
+        } ${showStickyComposer ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-8 opacity-0"}`}
+      >
+        <div className="mx-auto max-w-4xl rounded-[24px] border border-border/80 bg-card/95 p-3 shadow-[0_24px_70px_rgba(15,15,20,0.18)] backdrop-blur-xl">
+          <div className="flex items-start gap-3 px-2 pt-2">
+            <Sparkles className="mt-1 size-4 shrink-0 text-merlin" />
+            <textarea
+              value={input}
+              onChange={(event) => setInput(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" && !event.shiftKey) {
+                  event.preventDefault();
+                  onSubmit();
+                }
+              }}
+              rows={1}
+              placeholder="Ask Merlin to draft a contract, or describe the deal in plain language..."
+              className="max-h-24 min-h-[42px] flex-1 resize-none bg-transparent py-0.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
+            />
+          </div>
+          <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+            <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <Upload className="size-3.5" /> Attach
+            </button>
+            <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <LayoutTemplate className="size-3.5" /> Template <ChevronDown className="size-3.5 opacity-60" />
+            </button>
+            <div className="ml-auto flex items-center gap-3">
+              <span className="hidden text-[13px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
+              <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send sticky Merlin prompt" className="press size-11 rounded-2xl shadow-md shadow-primary/15">
+                <Send className="size-4" />
+              </Button>
             </div>
           </div>
         </div>
@@ -606,9 +620,22 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
 
         {/* contracts */}
         <div className="mt-14">
-          <div className="mb-3 flex items-center justify-between">
-            <SectionLabel>Your contracts</SectionLabel>
-            <button onClick={onNew} className="inline-flex items-center gap-1 text-[13px] font-medium text-primary hover:underline"><Plus className="size-3.5" /> New contract</button>
+          <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-[21px] font-semibold leading-none tracking-[-0.025em] text-foreground">Your recent contracts</h2>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">
+                  {RECENT_CONTRACTS.length} active
+                </span>
+              </div>
+              <p className="mt-1.5 text-[13px] text-muted-foreground">Continue drafts, approvals, reviews, and signed agreements.</p>
+            </div>
+            <button
+              onClick={onNew}
+              className="inline-flex w-fit items-center gap-1 rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-[13px] font-medium text-primary transition-colors hover:bg-accent hover:text-primary"
+            >
+              <Plus className="size-3.5" /> New contract
+            </button>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {RECENT_CONTRACTS.map((c) => (
@@ -616,16 +643,9 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                 <div className="flex items-start gap-3">
                   <span className="grid size-9 place-items-center rounded-lg bg-muted text-muted-foreground"><FileText className="size-4" /></span>
                   <div className="min-w-0 flex-1">
-                    <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
-                    <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
-                      <span className="font-mono">{c.id}</span><span>·</span><span>{c.value}</span>
-                    </div>
+                    <div className="line-clamp-2 text-sm font-semibold leading-snug">{c.title}</div>
                   </div>
                   <Badge tone={c.status === "Signed" ? "low" : c.status === "Draft" ? "med" : "primary"}>{c.status}</Badge>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-[11px] text-muted-foreground">Health {c.health}%</span>
-                  <span className="inline-flex items-center gap-1 text-[13px] font-medium text-primary opacity-0 transition-opacity group-hover:opacity-100">Open chat <ArrowRight className="size-3.5" /></span>
                 </div>
               </button>
             ))}

@@ -343,9 +343,9 @@ export function MerlinChat({
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="relative flex h-full min-h-0 flex-1 flex-col overflow-hidden bg-background">
       <div ref={scrollRef} className="flex-1 overflow-y-auto scrollbar-thin">
-        <div className="mx-auto max-w-2xl px-4 py-6">
+        <div className="mx-auto max-w-2xl px-4 pb-48 pt-24">
           {messages.map((m, idx) => {
             const grouped = m.role === "merlin" && messages[idx - 1]?.role === "merlin";
             return m.role === "merlin" ? (
@@ -367,55 +367,73 @@ export function MerlinChat({
                       {m.cards.map((c) => {
                         const isRisk = c.kind === "risk";
                         return (
-                          <div key={c.refId} className="group animate-in-up rounded-[18px] border border-border/60 bg-card p-5 shadow-xs transition-shadow duration-200 hover:shadow-sm">
-                            <div className="flex items-center justify-between gap-3">
-                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11.5px] font-semibold ${isRisk ? "bg-risk-high-soft text-risk-high" : "bg-risk-med-soft text-risk-med"}`}>
-                                {isRisk ? <ShieldAlert className="size-3.5" /> : <FilePlus2 className="size-3.5" />}
-                                {isRisk ? "Policy risk" : "Missing clause"}
-                              </span>
-                              {c.confidence != null && (
-                                <span className="inline-flex items-center gap-2" title="How confident Merlin is in this finding">
-                                  <span className="hidden text-[11px] font-medium text-muted-foreground sm:inline">Confidence</span>
-                                  <span className="h-1.5 w-14 overflow-hidden rounded-full bg-muted">
-                                    <span className="block h-full rounded-full bg-foreground/35" style={{ width: `${c.confidence}%` }} />
-                                  </span>
-                                  <span className="text-[12px] font-semibold tabular-nums text-foreground/70">{c.confidence}%</span>
-                                </span>
-                              )}
-                            </div>
-                            <h4 className="mt-3.5 text-[16px] font-semibold leading-snug tracking-[-0.01em]">{c.title}</h4>
-                            <p className="mt-1.5 text-[14px] leading-relaxed text-muted-foreground">{c.detail}</p>
-                            <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground/75">Basis · {c.basis}</p>
-                            <div className="mt-4">
-                              {c.done ? (
-                                <span className="inline-flex items-center gap-1.5 text-[13px] font-medium text-success"><Check className="size-4" /> {isRisk ? "Resolved" : "Added to draft"}</span>
-                              ) : (
-                                <Button size="sm" variant={isRisk ? "default" : "merlin"} className="h-9 rounded-full px-4" onClick={() => handleCard(c)}>
-                                  {isRisk ? <Check className="size-4" /> : <Sparkles className="size-4" />} {isRisk ? "Apply the fix" : "Draft & add clause"}
-                                </Button>
-                              )}
-                            </div>
+	                          <div key={c.refId} className="group animate-in-up rounded-2xl border border-border/60 bg-card p-4 shadow-xs transition-shadow duration-200 hover:border-merlin-border/60 hover:shadow-sm">
+	                            <div className="flex items-center justify-between gap-3">
+	                              <span className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-semibold ${isRisk ? "bg-risk-high-soft text-risk-high" : "bg-risk-med-soft text-risk-med"}`}>
+	                                {isRisk ? <ShieldAlert className="size-3.5" /> : <FilePlus2 className="size-3.5" />}
+	                                {isRisk ? "Policy risk" : "Missing clause"}
+	                              </span>
+	                              {c.done && (
+	                                <span className="inline-flex items-center gap-1.5 text-[12px] font-medium text-success">
+	                                  <Check className="size-3.5" /> {isRisk ? "Resolved" : "Added"}
+	                                </span>
+	                              )}
+	                            </div>
+	                            <div className="mt-3 flex items-end justify-between gap-4">
+	                              <div className="min-w-0 flex-1">
+	                                <h4 className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">{c.title}</h4>
+	                                <p className="mt-1 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{c.detail}</p>
+	                              </div>
+	                              {!c.done && (
+	                                <Button
+	                                  size="sm"
+	                                  variant="outline"
+	                                  className="h-8 shrink-0 rounded-full border-merlin-border px-3 text-primary hover:bg-merlin-soft"
+	                                  onClick={() => handleCard(c)}
+	                                >
+	                                  {isRisk ? <Check className="size-3.5" /> : <Sparkles className="size-3.5" />} {isRisk ? "Apply fix" : "Draft"}
+	                                </Button>
+	                              )}
+	                            </div>
                           </div>
                         );
                       })}
                     </div>
                   )}
                   {m.diff && (
-                    <div className="mt-3 animate-in-up rounded-[18px] border border-border/60 bg-card p-4 shadow-xs">
-                      <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        <GitCompare className="size-3.5" /> {m.diff.title} · change
-                      </div>
-                      <div className="mt-3 space-y-2.5">
-                        <div className="rounded-xl bg-risk-high-soft/50 p-3">
-                          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-risk-high"><Minus className="size-3" /> Before</div>
-                          <p className="text-[13.5px] leading-relaxed text-muted-foreground">{m.diff.before}</p>
+                    <div className="mt-3 animate-in-up overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xs">
+                      <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-accent text-primary">
+                            <GitCompare className="size-3.5" />
+                          </span>
+                          <div className="min-w-0">
+                            <div className="truncate text-[13px] font-semibold">{m.diff.title}</div>
+                            <div className="text-[11px] text-muted-foreground">Policy-standard change applied</div>
+                          </div>
                         </div>
-                        <div className="rounded-xl bg-risk-low-soft/60 p-3">
-                          <div className="mb-1 flex items-center gap-1.5 text-[11px] font-semibold text-success"><Plus className="size-3" /> After · policy standard</div>
-                          <p className="text-[13.5px] leading-relaxed text-foreground">{m.diff.after}</p>
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-risk-low-soft px-2 py-1 text-[11px] font-medium text-success">
+                          <Check className="size-3" /> Saved
+                        </span>
+                      </div>
+                      <div className="grid gap-0 sm:grid-cols-2">
+                        <div className="border-b border-border/60 bg-risk-high-soft/35 p-4 sm:border-b-0 sm:border-r">
+                          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-risk-high">
+                            <Minus className="size-3" /> Before
+                          </div>
+                          <p className="line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">{m.diff.before}</p>
+                        </div>
+                        <div className="bg-risk-low-soft/45 p-4">
+                          <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-success">
+                            <Plus className="size-3" /> After
+                          </div>
+                          <p className="line-clamp-3 text-[13px] leading-relaxed text-foreground">{m.diff.after}</p>
                         </div>
                       </div>
-                      <div className="mt-2.5 text-[11px] text-muted-foreground/75">Saved to version history · revert anytime</div>
+                      <div className="flex items-center justify-between gap-3 px-4 py-2.5 text-[11px] text-muted-foreground">
+                        <span>Version history updated</span>
+                        <button className="font-medium text-primary hover:underline">Revert</button>
+                      </div>
                     </div>
                   )}
                 </div>
@@ -468,8 +486,8 @@ export function MerlinChat({
         </div>
       </div>
 
-      <div className="border-t border-border bg-background">
-        <div className="mx-auto max-w-2xl px-4 py-3">
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-background via-background/90 via-55% to-transparent pb-3 pt-24">
+        <div className="pointer-events-auto mx-auto max-w-2xl px-4">
           <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-sm transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
             {/* attachment preview */}
             {attachments.length > 0 && (

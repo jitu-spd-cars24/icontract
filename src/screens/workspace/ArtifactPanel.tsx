@@ -1,10 +1,19 @@
 import * as React from "react";
-import { Badge, Progress, Tooltip } from "@/components/ui/primitives";
-import { MerlinMark, ClauseStatusBadge } from "@/components/shared";
+import { Badge, Progress } from "@/components/ui/primitives";
+import { MerlinMark } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
-import { CONTRACT } from "@/lib/data";
-import { FileText, PanelRightClose, ShieldCheck, Check, Eye, ChevronRight } from "lucide-react";
+import { ShieldCheck, Check, ChevronRight } from "lucide-react";
+import type { ClauseStatus } from "@/lib/types";
+
+const ARTIFACT_STATUS_META: Record<ClauseStatus, { label: string; className: string }> = {
+  standard: { label: "Standard", className: "bg-muted text-muted-foreground" },
+  modified: { label: "Modified", className: "bg-risk-med-soft text-risk-med" },
+  risk: { label: "At risk", className: "bg-risk-high-soft text-risk-high" },
+  missing: { label: "Missing", className: "bg-risk-high-soft text-risk-high" },
+  "ai-generated": { label: "AI", className: "bg-merlin-soft text-merlin" },
+  approved: { label: "Approved", className: "bg-risk-low-soft text-success" },
+};
 
 export function ArtifactPanel({
   sessionStatus = "Draft",
@@ -19,7 +28,7 @@ export function ArtifactPanel({
   onSubmit: () => void;
   onPreview?: () => void;
 }) {
-  const { clauses, metadata, insights, isBlank, intakeMode, submitted } = useStore();
+  const { clauses, metadata, insights, intakeMode, submitted } = useStore();
   const health = useHealth();
   const [tab, setTab] = React.useState<"document" | "metadata">("document");
 
@@ -31,6 +40,7 @@ export function ArtifactPanel({
     { label: "Risks", done: clauses.length > 0 && openRisks === 0 },
     { label: "Approval", done: submitted },
   ];
+  const completedSteps = steps.filter((s) => s.done).length;
   const statusText =
     sessionStatus === "Signed"
       ? "signed"
@@ -43,78 +53,84 @@ export function ArtifactPanel({
   return (
     <aside className="hidden w-[380px] shrink-0 flex-col border-l border-border bg-card lg:flex">
       {/* header */}
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <FileText className="size-4 text-muted-foreground" />
-        <div className="min-w-0 flex-1">
-          <div className="truncate text-sm font-semibold leading-tight">
-            {isBlank ? "Untitled agreement" : "Purchase Agreement"}
-          </div>
-          <div className="flex items-center gap-1.5 text-[11px] leading-tight text-muted-foreground">
-            <span>{isBlank ? "Artifact" : CONTRACT.id}</span>
-            <span>·</span>
-            <span className={sessionStatus === "Signed" ? "font-medium text-success" : submitted || sessionStatus === "In Approval" ? "font-medium text-success" : ""}>{statusText}</span>
-          </div>
-        </div>
-        {onPreview && (
-          <Tooltip content="Preview full contract" side="left">
-            <button onClick={onPreview} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Preview contract">
-              <Eye className="size-4" />
-            </button>
-          </Tooltip>
-        )}
-        <Tooltip content="Hide artifact" side="left">
-          <button onClick={onClose} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent" aria-label="Hide artifact">
-            <PanelRightClose className="size-4" />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/* steps / progress */}
       <div className="border-b border-border px-4 py-3">
-        <div className="flex items-center justify-between text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          <span>Progress</span>
-          <Badge tone={sessionStatus === "Signed" ? "low" : submitted || sessionStatus === "In Approval" ? "primary" : health.ready ? "low" : "med"}>
-            {sessionStatus === "Signed" ? "Signed" : submitted || sessionStatus === "In Approval" ? "In approval" : sessionStatus === "In Review" ? "In review" : health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}
-          </Badge>
-        </div>
-        <div className="mt-2.5 flex items-center">
-          {steps.map((s, i) => (
-            <React.Fragment key={s.label}>
-              <div className="flex flex-col items-center gap-1">
-                <span className={`grid size-5 place-items-center rounded-full text-[10px] ${s.done ? "bg-success text-success-foreground" : "border border-border text-muted-foreground"}`}>
-                  {s.done ? <Check className="size-3" /> : i + 1}
+        <div className="px-2 py-2">
+          <div className="relative grid grid-cols-4 gap-1">
+            <div className="absolute left-[12.5%] right-[12.5%] top-4 h-px bg-border" aria-hidden="true" />
+            <div
+              className="absolute left-[12.5%] top-4 h-px bg-success transition-all duration-300"
+              style={{ width: `${Math.max(0, completedSteps - 1) * 25}%` }}
+              aria-hidden="true"
+            />
+            {steps.map((s, index) => (
+              <div key={s.label} className="relative flex flex-col items-center gap-1.5 text-center">
+                <span
+                  className={`grid size-8 place-items-center rounded-full border text-[11px] font-semibold shadow-xs ${
+                    s.done
+                      ? "border-success/20 bg-risk-low-soft text-success"
+                      : "border-border bg-card text-muted-foreground"
+                  }`}
+                >
+                  {s.done ? <Check className="size-3.5" /> : index + 1}
                 </span>
-                <span className={`text-[10px] ${s.done ? "text-foreground" : "text-muted-foreground"}`}>{s.label}</span>
+                <span className={`text-[10.5px] font-medium ${s.done ? "text-foreground" : "text-muted-foreground"}`}>
+                  {s.label}
+                </span>
               </div>
-              {i < steps.length - 1 && <div className={`mx-1 mb-4 h-px flex-1 ${steps[i + 1].done ? "bg-success" : "bg-border"}`} />}
-            </React.Fragment>
-          ))}
+            ))}
+          </div>
         </div>
-        <div className="mt-3 flex items-baseline justify-between">
-          <span className="text-[11px] text-muted-foreground">Health score</span>
-          <span className="text-lg font-bold tabular-nums">{health.score}<span className="text-xs font-normal text-muted-foreground">/100</span></span>
+
+        <div className="mt-3 rounded-2xl border border-border/70 bg-background/60 p-3">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Health</div>
+              <div className="mt-1 flex items-baseline gap-1">
+                <span className="text-2xl font-bold tabular-nums">{health.score}</span>
+                <span className="text-xs text-muted-foreground">/100</span>
+              </div>
+            </div>
+            <Badge tone={sessionStatus === "Signed" ? "low" : submitted || sessionStatus === "In Approval" ? "primary" : health.ready ? "low" : "med"}>
+              {sessionStatus === "Signed" ? "Signed" : submitted || sessionStatus === "In Approval" ? "In approval" : sessionStatus === "In Review" ? "In review" : health.ready ? "Ready" : intakeMode ? "Gathering" : "In progress"}
+            </Badge>
+          </div>
+          <Progress value={health.score} tone={health.score >= 90 ? "success" : health.score >= 70 ? "primary" : "warning"} className="mt-2 h-1.5" />
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="rounded-xl bg-card px-2.5 py-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Stage</div>
+              <div className="mt-0.5 text-sm font-semibold">{completedSteps}/4</div>
+            </div>
+            <div className="rounded-xl bg-card px-2.5 py-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Risks</div>
+              <div className={`mt-0.5 text-sm font-semibold ${health.openRisks ? "text-risk-high" : "text-success"}`}>{health.openRisks}</div>
+            </div>
+            <div className="rounded-xl bg-card px-2.5 py-2">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Missing</div>
+              <div className={`mt-0.5 text-sm font-semibold ${health.openMissing ? "text-risk-med" : "text-success"}`}>{health.openMissing}</div>
+            </div>
+          </div>
         </div>
-        <Progress value={health.score} tone={health.score >= 90 ? "success" : health.score >= 70 ? "primary" : "warning"} className="mt-1.5" />
       </div>
 
-      {/* tabs — underline style */}
-      <div className="flex gap-5 border-b border-border px-4">
+      {/* tabs */}
+      <div className="border-b border-border px-4 py-3">
+        <div className="grid grid-cols-2 rounded-xl bg-muted p-1">
         {(["document", "metadata"] as const).map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`relative -mb-px py-2.5 text-[13px] font-medium capitalize transition-colors ${
-              tab === t ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            className={`rounded-lg px-3 py-1.5 text-[12px] font-semibold capitalize transition-colors ${
+              tab === t ? "bg-card text-foreground shadow-xs" : "text-muted-foreground hover:text-foreground"
             }`}
           >
             {t}
-            {tab === t && <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-primary" />}
           </button>
         ))}
+        </div>
       </div>
 
       {/* body */}
-      <div className="flex-1 overflow-y-auto p-2 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto p-3 scrollbar-thin">
         {tab === "document" ? (
           clauses.length === 0 ? (
             <div className="grid place-items-center gap-2 py-16 text-center">
@@ -123,29 +139,39 @@ export function ArtifactPanel({
               <p className="max-w-[220px] text-xs text-muted-foreground">As Merlin builds the contract, clauses appear here for you to review.</p>
             </div>
           ) : (
-            <div className="flex flex-col">
+            <div>
+              <div className="mb-2 flex items-center justify-between px-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Clauses</span>
+                <span className="text-[11px] text-muted-foreground">{clauses.length} total</span>
+              </div>
+              <div className="space-y-1.5">
               {clauses.map((c) => {
                 const flagged = c.risk !== "none";
                 const railColor = c.risk === "high" ? "var(--risk-high)" : c.risk === "medium" ? "var(--risk-med)" : "var(--risk-low)";
+                const status = ARTIFACT_STATUS_META[c.status];
                 return (
                   <button
                     key={c.id}
                     onClick={() => onOpenClause(c.id)}
-                    className="group relative w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-accent/60"
+                    className="group relative w-full rounded-xl border border-transparent bg-background/45 py-2.5 pl-3.5 pr-2.5 text-left transition-colors hover:border-border/70 hover:bg-accent/45"
                   >
                     {flagged && (
-                      <span className="absolute inset-y-2.5 left-0.5 w-[3px] rounded-full" style={{ background: railColor }} />
+                      <span className="absolute inset-y-2.5 left-1 w-[3px] rounded-full" style={{ background: railColor }} />
                     )}
-                    <div className="flex items-center gap-2.5">
-                      <span className="w-4 shrink-0 font-mono text-[11px] tabular-nums text-muted-foreground/55">{c.number}</span>
-                      <span className="min-w-0 flex-1 truncate text-[14px] font-medium">{c.title}</span>
-                      {c.status !== "standard" && <ClauseStatusBadge status={c.status} />}
+                    <div className="flex items-center gap-2">
+                      <span className={`min-w-0 flex-1 truncate text-[13px] font-semibold leading-tight ${flagged ? "pl-2" : ""}`}>{c.title}</span>
+                      {c.status !== "standard" && (
+                        <span className={`shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-medium leading-none ${status.className}`}>
+                          {status.label}
+                        </span>
+                      )}
                       <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 opacity-0 transition-opacity group-hover:opacity-100" />
                     </div>
-                    <p className="mt-0.5 line-clamp-1 pl-[26px] text-[12.5px] leading-relaxed text-muted-foreground/80">{c.body || "Empty clause"}</p>
+                    <p className={`mt-1 line-clamp-1 text-[12px] leading-relaxed text-muted-foreground/75 ${flagged ? "pl-2" : ""}`}>{c.body || "Empty clause"}</p>
                   </button>
                 );
               })}
+              </div>
             </div>
           )
         ) : (

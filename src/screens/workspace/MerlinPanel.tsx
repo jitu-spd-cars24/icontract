@@ -410,7 +410,7 @@ function InsightCard({
         <ConfidenceMeter value={insight.confidence} />
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button size="sm" variant="merlin" className="h-7" onClick={onAccept}>
+        <Button size="sm" variant="outline" className="h-7 border-merlin-border text-primary hover:bg-merlin-soft" onClick={onAccept}>
           <Check className="size-3" /> Apply fix
         </Button>
         <Button size="sm" variant="outline" className="h-7" onClick={onCompare}>
