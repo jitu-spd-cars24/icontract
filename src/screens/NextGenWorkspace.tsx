@@ -58,7 +58,7 @@ const MERLIN_HOME_UPDATES = [
     priority: "Medium" as const,
     progress: 96,
     tasks: { done: 3, total: 4 },
-    tone: "primary" as const,
+    tone: "success" as const,
     cta: "Review route",
     onSelectStatus: "In Approval" as const,
     onSelectTitle: "Cloudspring Technologies — MSA",
@@ -525,12 +525,16 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                   ? "var(--risk-high)"
                   : item.tone === "merlin"
                   ? "var(--merlin)"
+                  : item.tone === "success"
+                  ? "var(--risk-low)"
                   : "var(--primary)";
               const pillClass =
                 item.tone === "high"
                   ? "bg-risk-high-soft text-risk-high"
                   : item.tone === "merlin"
                   ? "bg-merlin-soft text-merlin"
+                  : item.tone === "success"
+                  ? "bg-risk-low-soft text-success"
                   : "bg-primary/10 text-primary";
               const ring = `conic-gradient(${toneColor} ${item.progress * 3.6}deg, color-mix(in oklch, var(--muted-foreground) 22%, transparent) 0deg)`;
 
