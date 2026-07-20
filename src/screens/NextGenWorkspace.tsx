@@ -369,30 +369,70 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
       </div>
       {/* hero */}
       <div className="relative">
-        <div className="mx-auto max-w-2xl px-6 pb-2 pt-16 sm:pt-24">
+        <div className="mx-auto max-w-3xl px-6 pb-2 pt-16 sm:pt-24">
           <div className="flex flex-col items-center text-center animate-in-up">
-            <MerlinOrb size={60} />
-            <h1 className="mt-7 text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[38px]">Good afternoon, Jitendra</h1>
-            <p className="mt-2.5 text-[15px] leading-relaxed text-muted-foreground">What would you like to work on? Describe a contract in plain language and Merlin will draft, check and de-risk it with you.</p>
+            <div className="orb-3d" style={{ width: 92, height: 92 }} />
+            <h1 className="mt-9 text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-balance sm:text-[42px]">
+              Good afternoon, Jitendra
+              <br />
+              What would you like to{" "}
+              <span className="bg-gradient-to-r from-merlin to-[#ff86cf] bg-clip-text text-transparent">draft?</span>
+            </h1>
           </div>
 
-          {/* prompt box — the focal surface */}
-          <div className="mt-8">
-            <div className="group flex items-end gap-2 rounded-2xl border border-border/70 bg-card p-2.5 shadow-lg transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_14%,transparent)]">
-              <textarea
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
-                rows={1}
-                placeholder="e.g. Draft a purchase agreement with ABC Manufacturing for ₹2 Cr…"
-                className="max-h-40 min-h-[30px] flex-1 resize-none bg-transparent px-2.5 py-2 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
-              />
-              <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send" className="press rounded-xl"><Send className="size-4" /></Button>
+          {/* prompt card — the focal surface */}
+          <div className="mx-auto mt-9 max-w-2xl">
+            <div className="group rounded-[22px] border border-border/70 bg-card p-3 shadow-lg transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
+              <div className="flex items-start gap-2.5 px-1.5 pt-1.5">
+                <Sparkles className="mt-1.5 size-4 shrink-0 text-merlin" />
+                <textarea
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
+                  rows={2}
+                  placeholder="Ask Merlin to draft a contract, or describe the deal in plain language…"
+                  className="max-h-40 min-h-[48px] flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
+                />
+              </div>
+              <div className="mt-2 flex items-center gap-2">
+                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                  <Upload className="size-3.5" /> Attach
+                </button>
+                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                  <LayoutTemplate className="size-3.5" /> Template <ArrowRight className="size-3 rotate-90 opacity-50" />
+                </button>
+                <div className="ml-auto flex items-center gap-2">
+                  <span className="hidden text-[12px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
+                  <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send" className="press rounded-xl"><Send className="size-4" /></Button>
+                </div>
+              </div>
             </div>
-            <div className="mt-3.5 flex flex-wrap justify-center gap-2">
-              {["Draft a Purchase Agreement", "Import third-party paper", "Start from a template"].map((s) => (
-                <button key={s} onClick={s.includes("Draft") ? onDraftMerlin : onNew} className="press rounded-full border border-border/70 bg-card/70 px-3.5 py-1.5 text-[13px] text-muted-foreground shadow-xs transition-all hover:-translate-y-px hover:text-foreground hover:shadow-sm">{s}</button>
-              ))}
+          </div>
+
+          {/* example starters */}
+          <div className="mx-auto mt-10 max-w-3xl">
+            <div className="mb-3 text-center text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">Get started with an example</div>
+            <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+              {[
+                { label: "Draft a Purchase Agreement", icon: FileText, run: onDraftMerlin },
+                { label: "Import third-party paper", icon: Upload, run: onNew },
+                { label: "Start from a template", icon: LayoutTemplate, run: onNew },
+                { label: "Duplicate a recent contract", icon: Copy, run: onNew },
+              ].map((ex) => {
+                const Icon = ex.icon;
+                return (
+                  <button
+                    key={ex.label}
+                    onClick={ex.run}
+                    className="group flex h-32 flex-col justify-between rounded-2xl border border-border/50 bg-muted/40 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card hover:shadow-md"
+                  >
+                    <span className="text-[13.5px] font-medium leading-snug text-foreground/90">{ex.label}</span>
+                    <span className="grid size-8 place-items-center rounded-lg bg-card text-muted-foreground shadow-xs transition-colors group-hover:text-merlin">
+                      <Icon className="size-4" />
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
