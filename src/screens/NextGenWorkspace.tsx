@@ -450,7 +450,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
             </div>
             <button
               onClick={onViewInsights}
-              className="hidden items-center gap-1 rounded-full border border-merlin-border bg-merlin-soft px-3 py-1.5 text-[12px] font-semibold text-merlin transition-colors hover:bg-accent hover:text-primary sm:inline-flex"
+              className="hidden items-center gap-1 rounded-full border border-border/70 bg-card px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:inline-flex"
             >
               View more <ArrowRight className="size-3.5" />
             </button>
@@ -468,23 +468,22 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                 <button
                   key={item.id}
                   onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
-                  className="group relative flex min-h-[168px] flex-col rounded-2xl border border-border/60 bg-card p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  className="group relative flex min-h-[184px] flex-col rounded-2xl border border-border/50 bg-muted/40 p-5 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${toneClass}`}>
                       <Icon className="size-4" />
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{item.label}</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">{item.label}</span>
                   </div>
 
-                  <div className="mt-4 flex items-end gap-2">
-                    <span className="text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{item.metric}</span>
-                    <span className="pb-1 text-[12px] font-medium text-muted-foreground">{item.metricLabel}</span>
+                  <div className="mt-6 flex items-end gap-2">
+                    <span className="text-[26px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{item.metric}</span>
+                    <span className="pb-0.5 text-[12px] font-medium text-muted-foreground">{item.metricLabel}</span>
                   </div>
 
-                  <div className="mt-3 flex-1">
-                    <div className="text-[15px] font-semibold leading-snug">{item.title}</div>
-                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{item.detail}</p>
+                  <div className="mt-2.5 flex-1">
+                    <div className="text-[15px] font-medium leading-snug text-foreground/90">{item.title}</div>
                   </div>
 
                   <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
