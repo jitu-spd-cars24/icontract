@@ -438,6 +438,56 @@
   .orb-spin, .orb-glow, .orb-breath { animation: none; }
 }
 
+/* Rotating dot-sphere (anime.js LMrRNW-style) */
+.sphere-scene {
+  position: relative;
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+.sphere-glow {
+  position: absolute;
+  inset: -26%;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in oklch, var(--merlin) 30%, transparent) 0%, transparent 62%);
+  filter: blur(18px);
+  animation: sphereGlow 5s ease-in-out infinite;
+}
+.sphere-rotor {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: sphereSpin 18s linear infinite;
+}
+.sphere-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  margin: -2.5px 0 0 -2.5px;
+  border-radius: 50%;
+  background: color-mix(in oklch, var(--merlin) 90%, white 8%);
+  box-shadow: 0 0 5px color-mix(in oklch, var(--merlin) 60%, transparent);
+  animation: sphereDot 3.2s ease-in-out infinite;
+}
+@keyframes sphereSpin {
+  from { transform: rotateY(0deg) rotateX(-12deg); }
+  to { transform: rotateY(360deg) rotateX(-12deg); }
+}
+@keyframes sphereDot {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@keyframes sphereGlow {
+  0%, 100% { opacity: 0.55; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.06); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sphere-rotor { animation: none; }
+  .sphere-dot { animation: none; opacity: 0.7; }
+  .sphere-glow { animation: none; }
+}
+
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

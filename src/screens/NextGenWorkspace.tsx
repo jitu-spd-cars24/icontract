@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
 import { Logo, MerlinMark, MerlinOrb, SectionLabel, RISK_META } from "@/components/shared";
+import { SphereAnimation } from "@/components/SphereAnimation";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { useStore } from "@/store";
 import { useHealth } from "./workspace/LeftRail";
@@ -371,7 +372,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
       <div className="relative">
         <div className="mx-auto max-w-3xl px-6 pb-2 pt-16 sm:pt-24">
           <div className="flex flex-col items-center text-center animate-in-up">
-            <div className="orb-3d" style={{ width: 92, height: 92 }} />
+            <SphereAnimation size={148} />
             <h1 className="mt-9 text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-balance sm:text-[42px]">
               Good afternoon, Jitendra
               <br />
