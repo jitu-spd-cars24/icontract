@@ -237,12 +237,10 @@ export function NextGenWorkspace() {
             <div className="px-3 pt-1">
               <button
                 onClick={() => setShowStart(true)}
-                className="group flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-background p-2 text-left shadow-xs transition-colors hover:border-primary/30 hover:bg-accent/40"
+                className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-primary px-5 py-3.5 text-[16px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.99]"
               >
-                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-[1.03]">
-                  <Plus className="size-6" strokeWidth={2.4} />
-                </span>
-                <span className="text-[16px] font-semibold">New contract</span>
+                <Plus className="size-5" strokeWidth={2.6} />
+                New contract
               </button>
             </div>
 
