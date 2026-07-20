@@ -231,17 +231,49 @@ export function NextGenWorkspace() {
               </Button>
               <div className="relative mt-2">
                 <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                <input placeholder="Search chats…" className="h-9 w-full rounded-lg border border-input bg-background pl-8 pr-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
+                <input placeholder="Search contracts…" className="h-9 w-full rounded-lg border border-input bg-background pl-8 pr-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" />
               </div>
             </div>
             <div className="mt-3 flex-1 overflow-y-auto px-2 scrollbar-thin">
-              <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent contracts</div>
-              {RECENT_CONTRACTS.map((c) => (
-                <button key={c.id} onClick={() => openContract(c)} className="mb-0.5 flex w-full flex-col items-start gap-0.5 rounded-lg px-2.5 py-2 text-left transition-colors hover:bg-accent/50">
-                  <span className="line-clamp-1 text-sm">{c.title}</span>
-                  <span className="line-clamp-1 text-[11px] text-muted-foreground">{c.status} · {c.updated}</span>
-                </button>
-              ))}
+              <div className="mb-1 flex items-center justify-between px-2 py-1">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent contracts</span>
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{RECENT_CONTRACTS.length}</span>
+              </div>
+              <div className="space-y-1">
+                {RECENT_CONTRACTS.map((c) => {
+                  const statusClass =
+                    c.status === "Signed"
+                      ? "bg-success"
+                      : c.status === "Draft"
+                      ? "bg-warning"
+                      : c.status === "In Approval"
+                      ? "bg-primary"
+                      : "bg-merlin";
+
+                  return (
+                    <button
+                      key={c.id}
+                      onClick={() => openContract(c)}
+                      className="group flex w-full items-center gap-2.5 rounded-xl border border-transparent px-2 py-2 text-left transition-colors hover:border-border/70 hover:bg-accent/45"
+                    >
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-primary transition-colors group-hover:bg-card">
+                        <FileText className="size-3.5" />
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13px] font-medium leading-tight text-foreground">
+                          {c.title}
+                        </span>
+                        <span className="mt-1 flex items-center gap-1.5 text-[11px] leading-none text-muted-foreground">
+                          <span className={`size-1.5 rounded-full ${statusClass}`} />
+                          <span>{c.status}</span>
+                          <span className="text-muted-foreground/60">·</span>
+                          <span>{c.updated}</span>
+                        </span>
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
             <div className="border-t border-border p-2">
               <button onClick={() => setAppMode("chooser")} className="mb-1 flex w-full items-center gap-2 rounded-lg px-2.5 py-1.5 text-[13px] text-muted-foreground hover:bg-accent/50">
@@ -394,12 +426,9 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                 <button
                   key={item.id}
                   onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
-                  className={`group flex min-h-[172px] flex-col rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring ${
-                    index === 0
-                      ? "border-merlin-border bg-gradient-to-br from-merlin-soft/55 via-card to-card shadow-[0_18px_50px_-34px_color-mix(in_oklch,var(--merlin)_65%,transparent)]"
-                      : "border-border/70 bg-card hover:border-merlin-border/70"
-                  }`}
+                  className="group relative flex min-h-[176px] flex-col rounded-2xl border border-border/60 bg-card p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
+                  {index === 0 && <span className="absolute inset-x-5 top-0 h-px rounded-full bg-gradient-to-r from-transparent via-merlin/50 to-transparent" />}
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
@@ -442,7 +471,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
             {RECENT_CONTRACTS.map((c) => (
-              <button key={c.id} onClick={() => onOpen(c)} className="group rounded-2xl border border-border/70 bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:shadow-sm">
+              <button key={c.id} onClick={() => onOpen(c)} className="group rounded-2xl border border-border/60 bg-card p-4 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-merlin-border/60 hover:shadow-md">
                 <div className="flex items-start gap-3">
                   <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
                   <div className="min-w-0 flex-1">
@@ -471,7 +500,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
               <SectionLabel>Waiting on you</SectionLabel>
               <Badge tone="high" className="ml-auto">{PENDING_APPROVALS.length}</Badge>
             </div>
-            <div className="divide-y divide-border rounded-2xl border border-border/70 bg-card">
+            <div className="divide-y divide-border/70 rounded-2xl border border-border/60 bg-card shadow-xs">
               {PENDING_APPROVALS.map((a) => (
                 <div key={a.id} className="p-3">
                   <div className="text-sm font-medium leading-snug">{a.title}</div>
@@ -493,7 +522,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
               <Building2 className="size-4 text-muted-foreground" />
               <SectionLabel>Recent suppliers</SectionLabel>
             </div>
-            <div className="divide-y divide-border rounded-2xl border border-border/70 bg-card">
+            <div className="divide-y divide-border/70 rounded-2xl border border-border/60 bg-card shadow-xs">
               {RECENT_SUPPLIERS.map((s) => (
                 <div key={s.name} className="flex items-center gap-3 p-3">
                   <div className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-primary">{s.name.slice(0, 2).toUpperCase()}</div>
