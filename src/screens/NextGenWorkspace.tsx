@@ -474,7 +474,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
                     <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${toneClass}`}>
                       <Icon className="size-4" />
                     </span>
-                    <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80">{item.label}</span>
+                    <span className="text-[13px] font-medium text-muted-foreground">{item.label}</span>
                   </div>
 
                   <div className="mt-6 flex items-end gap-2">
