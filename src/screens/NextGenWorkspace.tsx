@@ -1,6 +1,7 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
 import { Logo, MerlinMark, SectionLabel, RISK_META } from "@/components/shared";
+import { AmbientBackground } from "@/components/AmbientBackground";
 import { useStore } from "@/store";
 import { useHealth } from "./workspace/LeftRail";
 import { MerlinChat } from "./workspace/MerlinChat";
@@ -358,14 +359,16 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
 }) {
   const { toast } = useStore();
   return (
-    <div className="flex-1 overflow-y-auto scrollbar-thin">
+    <div className="relative flex-1 overflow-y-auto scrollbar-thin">
+      {/* ambient AI backdrop — covers the top region, dissolves into the canvas */}
+      <AmbientBackground className="h-[900px]" />
       {/* mobile top bar */}
-      <div className="flex items-center gap-2 px-4 py-3 md:hidden">
+      <div className="relative flex items-center gap-2 px-4 py-3 md:hidden">
         <Logo /><Badge tone="merlin" className="ml-auto">NextGen AI</Badge>
         <button onClick={toggleTheme} className="grid size-8 place-items-center rounded-lg text-muted-foreground hover:bg-accent">{theme === "light" ? <Moon className="size-4" /> : <Sun className="size-4" />}</button>
       </div>
-      {/* hero with calm aurora backdrop */}
-      <div className="aurora grain relative">
+      {/* hero */}
+      <div className="relative">
         <div className="mx-auto max-w-2xl px-6 pb-2 pt-16 sm:pt-24">
           <div className="flex flex-col items-center text-center animate-in-up">
             <MerlinMark size={52} />
