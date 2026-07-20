@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
-import { Logo, MerlinMark, MerlinOrb, SectionLabel, RISK_META } from "@/components/shared";
+import { Logo, MerlinMark, MerlinOrb, SectionLabel } from "@/components/shared";
 import { SphereAnimation } from "@/components/SphereAnimation";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { useStore } from "@/store";
@@ -10,12 +10,11 @@ import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
 import { ContractPreview } from "./workspace/ContractPreview";
 import { ClauseDetail } from "./workspace/ClauseDetail";
-import { RECENT_CONTRACTS, PENDING_APPROVALS, RECENT_SUPPLIERS, PROJECTS } from "@/lib/data";
-import type { RiskLevel } from "@/lib/types";
+import { RECENT_CONTRACTS, PROJECTS } from "@/lib/data";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight,
-  CheckSquare, Building2, TrendingUp, Eye, PanelLeftClose, PanelLeftOpen, ShieldAlert,
+  Eye, PanelLeftClose, PanelLeftOpen, ShieldAlert,
   WandSparkles, SlidersHorizontal, Folder, ChevronDown, ChevronRight, Pin,
   Clock, MoreHorizontal, Flag, User, ListChecks, BarChart3,
 } from "lucide-react";
@@ -629,64 +628,6 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
           </div>
         </div>
 
-        {/* supporting sections */}
-        <div className="mt-8 grid gap-6 xl:grid-cols-3">
-          {/* waiting on you */}
-          <div>
-            <div className="mb-3 flex items-center gap-2">
-              <CheckSquare className="size-4 text-muted-foreground" />
-              <SectionLabel>Waiting on you</SectionLabel>
-              <Badge tone="high" className="ml-auto">{PENDING_APPROVALS.length}</Badge>
-            </div>
-            <div className="divide-y divide-border/70 rounded-2xl border border-border/60 bg-card shadow-xs">
-              {PENDING_APPROVALS.map((a) => (
-                <div key={a.id} className="p-3">
-                  <div className="text-sm font-medium leading-snug">{a.title}</div>
-                  <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                    <span>{a.stage}</span><span>{a.from} · {a.waiting}</span>
-                  </div>
-                  <div className="mt-2 flex gap-2">
-                    <Button size="sm" variant="success" className="h-7" onClick={() => toast({ title: "Approved", detail: a.title, tone: "success" })}>Approve</Button>
-                    <Button size="sm" variant="outline" className="h-7" onClick={() => onOpen({ title: a.title, status: "In Approval" })}>Review</Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* recent suppliers */}
-          <div>
-            <div className="mb-3 flex items-center gap-2">
-              <Building2 className="size-4 text-muted-foreground" />
-              <SectionLabel>Recent suppliers</SectionLabel>
-            </div>
-            <div className="divide-y divide-border/70 rounded-2xl border border-border/60 bg-card shadow-xs">
-              {RECENT_SUPPLIERS.map((s) => (
-                <div key={s.name} className="flex items-center gap-3 p-3">
-                  <div className="grid size-8 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">{s.name.slice(0, 2).toUpperCase()}</div>
-                  <div className="min-w-0 flex-1">
-                    <div className="truncate text-sm font-medium">{s.name}</div>
-                    <div className="text-[11px] text-muted-foreground">{s.contracts} contracts · {s.region}</div>
-                  </div>
-                  <Badge tone={RISK_META[s.risk as RiskLevel].tone}>{s.risk}</Badge>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* cycle time */}
-          <div className="rounded-2xl border border-border/70 bg-card p-4">
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <TrendingUp className="size-4" />
-              <span className="text-xs font-medium">Cycle time this quarter</span>
-            </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="text-2xl font-semibold tabular-nums">6.2</span>
-              <span className="text-sm text-muted-foreground">days avg</span>
-              <Badge tone="low" className="ml-auto">↓ 38% with Merlin</Badge>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
