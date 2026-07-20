@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
-import { Logo, MerlinMark, SectionLabel, RISK_META } from "@/components/shared";
+import { Logo, MerlinMark, MerlinOrb, SectionLabel, RISK_META } from "@/components/shared";
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { useStore } from "@/store";
 import { useHealth } from "./workspace/LeftRail";
@@ -257,7 +257,7 @@ export function NextGenWorkspace() {
                       onClick={() => openContract(c)}
                       className="group flex w-full items-center gap-2.5 rounded-xl border border-transparent px-2 py-2 text-left transition-colors hover:border-border/70 hover:bg-accent/45"
                     >
-                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-accent text-primary transition-colors group-hover:bg-card">
+                      <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-muted text-muted-foreground transition-colors group-hover:bg-card">
                         <FileText className="size-3.5" />
                       </span>
                       <span className="min-w-0 flex-1">
@@ -371,8 +371,8 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
       <div className="relative">
         <div className="mx-auto max-w-2xl px-6 pb-2 pt-16 sm:pt-24">
           <div className="flex flex-col items-center text-center animate-in-up">
-            <MerlinMark size={52} />
-            <h1 className="mt-6 text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[38px]">Good afternoon, Jitendra</h1>
+            <MerlinOrb size={60} />
+            <h1 className="mt-7 text-[30px] font-semibold leading-[1.1] tracking-[-0.02em] sm:text-[38px]">Good afternoon, Jitendra</h1>
             <p className="mt-2.5 text-[15px] leading-relaxed text-muted-foreground">What would you like to work on? Describe a contract in plain language and Merlin will draft, check and de-risk it with you.</p>
           </div>
 
@@ -418,48 +418,38 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
           <div className="grid gap-3 lg:grid-cols-3">
             {MERLIN_HOME_UPDATES.map((item, index) => {
               const Icon = item.icon;
+              // colour only where it means something: risk = red; otherwise neutral
               const toneClass =
                 item.tone === "high"
-                  ? "border-risk-high/20 bg-risk-high-soft/45 text-risk-high"
-                  : item.tone === "primary"
-                  ? "border-primary/15 bg-accent text-primary"
-                  : "border-merlin-border bg-merlin-soft text-merlin";
+                  ? "bg-risk-high-soft text-risk-high"
+                  : "bg-muted text-muted-foreground";
 
               return (
                 <button
                   key={item.id}
                   onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
-                  className="group relative flex min-h-[176px] flex-col rounded-2xl border border-border/60 bg-card p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                  className="group relative flex min-h-[168px] flex-col rounded-2xl border border-border/60 bg-card p-5 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
                 >
-                  {index === 0 && <span className="absolute inset-x-5 top-0 h-px rounded-full bg-gradient-to-r from-transparent via-merlin/50 to-transparent" />}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                        {item.label}
-                      </div>
-                      <div className="mt-2 flex items-end gap-2">
-                        <span className="text-2xl font-semibold leading-none tracking-[-0.03em] tabular-nums">{item.metric}</span>
-                        <span className="pb-0.5 text-[11px] font-medium text-muted-foreground">{item.metricLabel}</span>
-                      </div>
-                    </div>
-                    <div className={`grid size-10 shrink-0 place-items-center rounded-xl border ${toneClass}`}>
+                  <div className="flex items-center gap-2.5">
+                    <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${toneClass}`}>
                       <Icon className="size-4" />
-                    </div>
-                  </div>
-
-                  <div className="mt-4 flex-1">
-                    <div className="text-[15px] font-semibold leading-snug">{item.title}</div>
-                    <p className="mt-2 line-clamp-3 text-[13px] leading-relaxed text-muted-foreground">
-                      {item.detail}
-                    </p>
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-border/70 pt-3">
-                    <span className="text-[11px] font-medium text-muted-foreground">Updated from portfolio activity</span>
-                    <span className="inline-flex shrink-0 items-center gap-1 text-[13px] font-semibold text-primary">
-                      {item.cta} <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
                     </span>
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">{item.label}</span>
                   </div>
+
+                  <div className="mt-4 flex items-end gap-2">
+                    <span className="text-[28px] font-semibold leading-none tracking-[-0.03em] tabular-nums">{item.metric}</span>
+                    <span className="pb-1 text-[12px] font-medium text-muted-foreground">{item.metricLabel}</span>
+                  </div>
+
+                  <div className="mt-3 flex-1">
+                    <div className="text-[15px] font-semibold leading-snug">{item.title}</div>
+                    <p className="mt-1.5 line-clamp-2 text-[13px] leading-relaxed text-muted-foreground">{item.detail}</p>
+                  </div>
+
+                  <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-semibold text-primary">
+                    {item.cta} <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
+                  </span>
                 </button>
               );
             })}
@@ -476,7 +466,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
             {RECENT_CONTRACTS.map((c) => (
               <button key={c.id} onClick={() => onOpen(c)} className="group rounded-2xl border border-border/60 bg-card p-4 text-left shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:border-merlin-border/60 hover:shadow-md">
                 <div className="flex items-start gap-3">
-                  <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><FileText className="size-4" /></span>
+                  <span className="grid size-9 place-items-center rounded-lg bg-muted text-muted-foreground"><FileText className="size-4" /></span>
                   <div className="min-w-0 flex-1">
                     <div className="line-clamp-1 text-sm font-medium">{c.title}</div>
                     <div className="mt-0.5 flex items-center gap-2 text-[11px] text-muted-foreground">
@@ -528,7 +518,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
             <div className="divide-y divide-border/70 rounded-2xl border border-border/60 bg-card shadow-xs">
               {RECENT_SUPPLIERS.map((s) => (
                 <div key={s.name} className="flex items-center gap-3 p-3">
-                  <div className="grid size-8 place-items-center rounded-full bg-accent text-xs font-semibold text-primary">{s.name.slice(0, 2).toUpperCase()}</div>
+                  <div className="grid size-8 place-items-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">{s.name.slice(0, 2).toUpperCase()}</div>
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-sm font-medium">{s.name}</div>
                     <div className="text-[11px] text-muted-foreground">{s.contracts} contracts · {s.region}</div>
@@ -704,7 +694,7 @@ function MerlinInsightsView({ onBack, onOpen }: {
                     className="grid w-full gap-3 px-4 py-4 text-left transition-colors hover:bg-accent/35 sm:grid-cols-[1fr_180px_150px] sm:items-center"
                   >
                     <div className="flex min-w-0 items-start gap-3">
-                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-accent text-primary">
+                      <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-muted text-muted-foreground">
                         <FileText className="size-4" />
                       </span>
                       <div className="min-w-0">
@@ -815,7 +805,7 @@ function StartModal({ onClose, onPick }: { onClose: () => void; onPick: (id: str
               <button key={o.id} onClick={() => onPick(o.id)} className={`group relative rounded-xl border p-4 text-left transition-all hover:-translate-y-0.5 hover:shadow-md ${o.merlin ? "border-merlin-border bg-merlin-soft/40 sm:col-span-2" : "border-border hover:border-primary/40"}`}>
                 {o.rec && <Badge tone="merlin" className="absolute right-3 top-3"><Check className="size-3" /> Recommended</Badge>}
                 <div className="flex items-start gap-3">
-                  {o.merlin ? <MerlinMark size={36} /> : <span className="grid size-9 place-items-center rounded-lg bg-accent text-primary"><Icon className="size-4" /></span>}
+                  {o.merlin ? <MerlinMark size={36} /> : <span className="grid size-9 place-items-center rounded-lg bg-muted text-muted-foreground"><Icon className="size-4" /></span>}
                   <div>
                     <div className="text-[15px] font-semibold">{o.title}</div>
                     <p className="mt-0.5 text-[13px] leading-relaxed text-muted-foreground">{o.desc}</p>

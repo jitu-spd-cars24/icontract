@@ -39,10 +39,10 @@
   /* Brand — Zycus deep violet (#340068) */
   --primary: #340068;
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.972 0.003 300);
-  --secondary-foreground: oklch(0.33 0.11 305);
-  --accent: oklch(0.962 0.018 305);
-  --accent-foreground: oklch(0.4 0.16 305);
+  --secondary: oklch(0.972 0.003 285);
+  --secondary-foreground: oklch(0.33 0.02 285);
+  --accent: oklch(0.966 0.006 285);
+  --accent-foreground: oklch(0.4 0.14 305);
 
   /* Merlin AI accent — violet (softer) */
   --merlin: oklch(0.56 0.13 298);
@@ -96,10 +96,11 @@
 
   --primary: oklch(0.64 0.18 305);
   --primary-foreground: oklch(0.99 0 0);
-  --secondary: oklch(0.27 0.012 300);
-  --secondary-foreground: oklch(0.95 0.004 300);
-  --accent: oklch(0.32 0.045 305);
-  --accent-foreground: oklch(0.88 0.05 305);
+  --secondary: oklch(0.26 0.008 285);
+  --secondary-foreground: oklch(0.95 0.004 285);
+  /* Neutral hover/surface tint — keeps purple for accents only, not ambient */
+  --accent: oklch(0.28 0.01 285);
+  --accent-foreground: oklch(0.92 0.008 285);
 
   --merlin: oklch(0.72 0.12 300);
   --merlin-foreground: oklch(0.16 0.02 300);
@@ -400,6 +401,21 @@
 @keyframes ambientB {
   from { transform: translate3d(2%, 1%, 0) scale(1.06); }
   to { transform: translate3d(-3%, -2%, 0) scale(1); }
+}
+@keyframes orbSpin { to { transform: rotate(360deg); } }
+@keyframes orbGlow {
+  0%, 100% { opacity: 0.45; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.08); }
+}
+@keyframes orbBreath {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.09); }
+}
+.orb-spin { animation: orbSpin 7s linear infinite; }
+.orb-glow { animation: orbGlow 4.5s ease-in-out infinite; filter: blur(10px); }
+.orb-breath { animation: orbBreath 3.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .orb-spin, .orb-glow, .orb-breath { animation: none; }
 }
 
 @keyframes fadeIn {

@@ -58,6 +58,49 @@ export function MerlinMark({
   );
 }
 
+/* Animated hero AI orb — pulsing glow + a slow rotating sheen ring */
+export function MerlinOrb({ size = 60 }: { size?: number }) {
+  const ringMask =
+    "radial-gradient(farthest-side, transparent calc(100% - 2px), #000 calc(100% - 2px))";
+  return (
+    <div className="relative grid place-items-center" style={{ width: size, height: size }}>
+      <span
+        aria-hidden="true"
+        className="orb-glow absolute rounded-full"
+        style={{
+          inset: -size * 0.28,
+          background:
+            "radial-gradient(circle, color-mix(in oklch, var(--merlin) 42%, transparent), transparent 68%)",
+        }}
+      />
+      <span
+        aria-hidden="true"
+        className="orb-spin absolute"
+        style={{
+          inset: -3,
+          borderRadius: size * 0.34,
+          background:
+            "conic-gradient(from 0deg, transparent 0%, color-mix(in oklch, var(--merlin) 70%, transparent) 18%, transparent 42%)",
+          WebkitMask: ringMask,
+          mask: ringMask,
+        }}
+      />
+      <span
+        className="relative grid place-items-center text-white shadow-lg"
+        style={{
+          width: size,
+          height: size,
+          borderRadius: size * 0.32,
+          background:
+            "linear-gradient(140deg, var(--primary) 0%, var(--merlin) 60%, color-mix(in oklch, var(--merlin) 72%, #ff86cf) 100%)",
+        }}
+      >
+        <Sparkles className="orb-breath" style={{ width: size * 0.46, height: size * 0.46 }} />
+      </span>
+    </div>
+  );
+}
+
 export const RISK_META: Record<
   RiskLevel,
   { label: string; tone: "high" | "med" | "low" | "neutral"; color: string }
