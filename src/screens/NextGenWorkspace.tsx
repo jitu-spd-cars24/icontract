@@ -237,9 +237,9 @@ export function NextGenWorkspace() {
             <div className="px-3 pt-1">
               <button
                 onClick={() => setShowStart(true)}
-                className="flex w-full items-center justify-center gap-2.5 rounded-2xl bg-primary px-5 py-3.5 text-[16px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.99]"
+                className="flex w-full items-center justify-start gap-2 rounded-xl bg-primary px-3.5 py-2.5 text-[14px] font-semibold text-primary-foreground shadow-sm transition-all hover:bg-primary/90 hover:shadow-md active:scale-[0.99]"
               >
-                <Plus className="size-5" strokeWidth={2.6} />
+                <Plus className="size-[18px]" strokeWidth={2.6} />
                 New contract
               </button>
             </div>
