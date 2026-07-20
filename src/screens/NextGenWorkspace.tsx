@@ -502,17 +502,22 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
 
       <div className="mx-auto max-w-5xl px-6 pb-14">
         <div className="mt-12">
-          <div className="mb-3 flex items-end justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <MerlinMark size={24} />
+          <div className="mb-4 flex items-end justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <MerlinMark size={34} />
               <div>
-                <SectionLabel>Merlin insights</SectionLabel>
-                <p className="mt-0.5 text-[12px] text-muted-foreground">Priority signals from your active contract work.</p>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[21px] font-semibold leading-none tracking-[-0.025em] text-foreground">Merlin insights</h2>
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-merlin-soft px-2 py-0.5 text-[11px] font-semibold text-merlin">
+                    <span className="size-1.5 animate-pulse rounded-full bg-merlin" /> Live
+                  </span>
+                </div>
+                <p className="mt-1.5 text-[13px] text-muted-foreground">Priority signals from your active contract work.</p>
               </div>
             </div>
             <button
               onClick={onViewInsights}
-              className="hidden items-center gap-1 rounded-full border border-border/70 bg-card px-3 py-1.5 text-[12px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:inline-flex"
+              className="hidden items-center gap-1 rounded-full border border-border/70 bg-card px-3.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:inline-flex"
             >
               View more <ArrowRight className="size-3.5" />
             </button>
