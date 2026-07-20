@@ -236,9 +236,9 @@ export function NextGenWorkspace() {
               </div>
             </div>
             <div className="mt-3 flex-1 overflow-y-auto px-2 scrollbar-thin">
-              <div className="mb-1 flex items-center justify-between px-2 py-1">
-                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Recent contracts</span>
-                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">{RECENT_CONTRACTS.length}</span>
+              <div className="mb-1.5 flex items-center justify-between px-2 py-1">
+                <SectionLabel>Recent contracts</SectionLabel>
+                <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground/80">{RECENT_CONTRACTS.length}</span>
               </div>
               <div className="space-y-1">
                 {RECENT_CONTRACTS.map((c) => {

@@ -183,7 +183,7 @@ export function SectionLabel({
   return (
     <div
       className={cn(
-        "text-[11px] font-semibold uppercase tracking-wider text-muted-foreground",
+        "text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground/80",
         className
       )}
     >
