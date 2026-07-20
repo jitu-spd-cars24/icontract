@@ -416,29 +416,29 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
           </div>
 
           {/* prompt card — the focal surface */}
-          <div className="mx-auto mt-9 max-w-2xl">
-            <div className="group rounded-[22px] border border-border/70 bg-card p-3 shadow-lg transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
-              <div className="flex items-start gap-2.5 px-1.5 pt-1.5">
-                <Sparkles className="mt-1.5 size-4 shrink-0 text-merlin" />
+          <div className="mx-auto mt-9 max-w-4xl">
+            <div className="group rounded-[24px] border border-border/80 bg-card/95 p-3 shadow-[0_24px_70px_rgba(15,15,20,0.12)] transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
+              <div className="flex items-start gap-3 px-2 pt-2">
+                <Sparkles className="mt-1 size-4 shrink-0 text-merlin" />
                 <textarea
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); onSubmit(); } }}
                   rows={2}
                   placeholder="Ask Merlin to draft a contract, or describe the deal in plain language…"
-                  className="max-h-40 min-h-[48px] flex-1 resize-none bg-transparent py-1 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
+                  className="max-h-40 min-h-[72px] flex-1 resize-none bg-transparent py-0.5 text-[17px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
                 />
               </div>
-              <div className="mt-2 flex items-center gap-2">
-                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+              <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
                   <Upload className="size-3.5" /> Attach
                 </button>
-                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-lg border border-border/70 px-2.5 py-1.5 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
-                  <LayoutTemplate className="size-3.5" /> Template <ArrowRight className="size-3 rotate-90 opacity-50" />
+                <button onClick={onNew} className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                  <LayoutTemplate className="size-3.5" /> Template <ChevronDown className="size-3.5 opacity-60" />
                 </button>
-                <div className="ml-auto flex items-center gap-2">
-                  <span className="hidden text-[12px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
-                  <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send" className="press rounded-xl"><Send className="size-4" /></Button>
+                <div className="ml-auto flex items-center gap-3">
+                  <span className="hidden text-[13px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
+                  <Button size="icon" onClick={onSubmit} disabled={!input.trim()} aria-label="Send" className="press size-11 rounded-2xl shadow-md shadow-primary/15"><Send className="size-4" /></Button>
                 </div>
               </div>
             </div>

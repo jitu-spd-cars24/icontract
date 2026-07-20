@@ -4,7 +4,7 @@ import { MerlinMark, ConfidenceMeter } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { CONTRACT, INSIGHTS, STANDARD_FIX } from "@/lib/data";
-import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, FilePlus2, GitCompare, Minus, Plus } from "lucide-react";
+import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, FilePlus2, GitCompare, Minus, Plus, LayoutTemplate, ChevronDown } from "lucide-react";
 
 interface Card {
   kind: "risk" | "missing";
@@ -488,7 +488,7 @@ export function MerlinChat({
 
       <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 bg-gradient-to-t from-background via-background/90 via-55% to-transparent pb-3 pt-24">
         <div className="pointer-events-auto mx-auto max-w-2xl px-4">
-          <div className="rounded-2xl border border-border/70 bg-card p-2 shadow-sm transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
+          <div className="rounded-[24px] border border-border/80 bg-card/95 p-3 shadow-[0_18px_50px_rgba(15,15,20,0.12)] transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
             {/* attachment preview */}
             {attachments.length > 0 && (
               <div className="mb-2 flex flex-wrap gap-1.5 px-1">
@@ -503,25 +503,36 @@ export function MerlinChat({
                 ))}
               </div>
             )}
-            <div className="flex items-end gap-2">
-              <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.rtf,.txt" className="hidden" onChange={onPickFiles} />
-              <button
-                onClick={() => fileRef.current?.click()}
-                className="grid size-9 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                aria-label="Attach image or PDF"
-                title="Attach image or PDF"
-              >
-                <Paperclip className="size-4" />
-              </button>
+            <div className="flex items-start gap-3 px-2 pt-2">
+              <Sparkles className="mt-1 size-4 shrink-0 text-merlin" />
               <textarea
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(draft); } }}
-                rows={1}
-                placeholder="Ask Merlin, or attach a contract, image or PDF…"
-                className="max-h-32 min-h-[24px] flex-1 resize-none bg-transparent px-1 py-1.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground scrollbar-thin"
+                rows={2}
+                placeholder="Ask Merlin to draft a contract, or describe the deal in plain language..."
+                className="max-h-32 min-h-[52px] flex-1 resize-none bg-transparent py-0.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
               />
-              <Button size="icon" onClick={() => send(draft)} disabled={!draft.trim() && attachments.length === 0} aria-label="Send"><Send className="size-4" /></Button>
+            </div>
+            <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+              <input ref={fileRef} type="file" multiple accept="image/*,.pdf,.doc,.docx,.rtf,.txt" className="hidden" onChange={onPickFiles} />
+              <button
+                onClick={() => fileRef.current?.click()}
+                className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                aria-label="Attach image or PDF"
+                title="Attach image or PDF"
+              >
+                <Paperclip className="size-3.5" /> Attach
+              </button>
+              <button className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                <LayoutTemplate className="size-3.5" /> Template <ChevronDown className="size-3.5 opacity-60" />
+              </button>
+              <div className="ml-auto flex items-center gap-3">
+                <span className="hidden text-[13px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
+                <Button size="icon" onClick={() => send(draft)} disabled={!draft.trim() && attachments.length === 0} aria-label="Send" className="press size-11 rounded-2xl shadow-md shadow-primary/15">
+                  <Send className="size-4" />
+                </Button>
+              </div>
             </div>
           </div>
           <div className="mt-1.5 text-center text-[11px] text-muted-foreground">Merlin acts on your contract — it never changes legal terms without your confirmation.</div>

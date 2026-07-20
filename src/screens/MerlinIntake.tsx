@@ -1,6 +1,6 @@
 import * as React from "react";
 import { TopBar } from "@/components/TopBar";
-import { Card, Button, Badge, Input } from "@/components/ui/primitives";
+import { Card, Button, Badge } from "@/components/ui/primitives";
 import { MerlinMark, SectionLabel } from "@/components/shared";
 import { useStore } from "@/store";
 import { INTAKE_SCRIPT, METADATA } from "@/lib/data";
@@ -12,6 +12,9 @@ import {
   Sparkles,
   AlertCircle,
   CornerDownLeft,
+  Upload,
+  LayoutTemplate,
+  ChevronDown,
 } from "lucide-react";
 
 interface Turn {
@@ -176,57 +179,62 @@ export function MerlinIntake() {
 
             {/* input / suggestions */}
             {!done && !typing && current && (
-              <div className="border-t border-border p-3">
+              <div className="border-t border-border/40 bg-gradient-to-t from-background via-background/90 to-transparent p-3 pt-8">
                 {current.missing ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      value={draft}
-                      onChange={(e) => setDraft(e.target.value)}
-                      placeholder="Type the signer's name…"
-                      onKeyDown={(e) => e.key === "Enter" && draft && answer(draft)}
-                    />
-                    <Button
-                      variant="outline"
-                      size="sm"
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <button
                       onClick={() => answer("", true)}
+                      className="press inline-flex items-center gap-1.5 rounded-full border border-risk-med/30 bg-risk-med-soft px-3 py-1.5 text-xs font-medium text-risk-med transition-colors hover:bg-risk-med hover:text-white"
                     >
-                      Skip
-                    </Button>
-                    <Button size="sm" disabled={!draft} onClick={() => answer(draft)}>
-                      <Send className="size-4" />
-                    </Button>
+                      <AlertCircle className="size-3" /> Skip for now
+                    </button>
                   </div>
                 ) : (
-                  <div className="space-y-2">
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => answer(current.answer)}
-                        className="group inline-flex items-center gap-1.5 rounded-full border border-merlin-border bg-merlin-soft px-3 py-1.5 text-xs font-medium text-merlin transition-colors hover:bg-merlin hover:text-merlin-foreground"
-                      >
-                        <Sparkles className="size-3" />
-                        {current.answer}
-                      </button>
-                      <span className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground">
-                        <CornerDownLeft className="size-3" /> or type your own
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Input
-                        value={draft}
-                        onChange={(e) => setDraft(e.target.value)}
-                        placeholder="Type your answer…"
-                        onKeyDown={(e) => e.key === "Enter" && draft && answer(draft)}
-                      />
-                      <Button
-                        size="sm"
-                        disabled={!draft}
-                        onClick={() => answer(draft)}
-                      >
+                  <div className="mb-3 flex flex-wrap gap-2">
+                    <button
+                      onClick={() => answer(current.answer)}
+                      className="press inline-flex items-center gap-1.5 rounded-full border border-merlin-border bg-merlin-soft px-3 py-1.5 text-xs font-medium text-merlin transition-colors hover:bg-merlin hover:text-merlin-foreground"
+                    >
+                      <Sparkles className="size-3" />
+                      {current.answer}
+                    </button>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground">
+                      <CornerDownLeft className="size-3" /> or type your own
+                    </span>
+                  </div>
+                )}
+                <div className="rounded-[24px] border border-border/80 bg-card/95 p-3 shadow-[0_18px_50px_rgba(15,15,20,0.12)] transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
+                  <div className="flex items-start gap-3 px-2 pt-2">
+                    <Sparkles className="mt-1 size-4 shrink-0 text-merlin" />
+                    <textarea
+                      value={draft}
+                      onChange={(e) => setDraft(e.target.value)}
+                      placeholder={current.missing ? "Type the signer's name..." : "Type your answer, or describe the deal in plain language..."}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey && draft) {
+                          e.preventDefault();
+                          answer(draft);
+                        }
+                      }}
+                      rows={2}
+                      className="max-h-28 min-h-[52px] flex-1 resize-none bg-transparent py-0.5 text-[15px] leading-relaxed outline-none placeholder:text-muted-foreground/70 scrollbar-thin"
+                    />
+                  </div>
+                  <div className="mt-2 flex flex-wrap items-center gap-2 px-1">
+                    <button className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                      <Upload className="size-3.5" /> Attach
+                    </button>
+                    <button className="press inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-background px-3 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground">
+                      <LayoutTemplate className="size-3.5" /> Template <ChevronDown className="size-3.5 opacity-60" />
+                    </button>
+                    <div className="ml-auto flex items-center gap-3">
+                      <span className="hidden text-[13px] text-muted-foreground sm:inline">Merlin drafts &amp; de-risks</span>
+                      <Button size="icon" disabled={!draft} onClick={() => answer(draft)} aria-label="Send answer" className="press size-11 rounded-2xl shadow-md shadow-primary/15">
                         <Send className="size-4" />
                       </Button>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             )}
           </Card>
