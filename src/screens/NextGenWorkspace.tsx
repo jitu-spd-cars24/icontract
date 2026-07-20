@@ -16,7 +16,7 @@ import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
   FileText, ArrowLeft, X, LayoutTemplate, Upload, FilePlus2, Copy, Check, ArrowRight,
   CheckSquare, Building2, TrendingUp, Eye, PanelLeftClose, PanelLeftOpen, ShieldAlert,
-  WandSparkles, SlidersHorizontal, SquarePen, Folder, ChevronDown, ChevronRight, Pin,
+  WandSparkles, SlidersHorizontal, Folder, ChevronDown, ChevronRight, Pin,
   Clock, MoreHorizontal,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -237,12 +237,12 @@ export function NextGenWorkspace() {
             <div className="px-3 pt-1">
               <button
                 onClick={() => setShowStart(true)}
-                className="group flex w-full items-center gap-3 rounded-xl p-1.5 text-left transition-colors hover:bg-accent/50"
+                className="group flex w-full items-center gap-3 rounded-2xl border border-border/60 bg-background p-2 text-left shadow-xs transition-colors hover:border-primary/30 hover:bg-accent/40"
               >
-                <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-[1.03]">
-                  <SquarePen className="size-[17px]" />
+                <span className="grid size-12 shrink-0 place-items-center rounded-2xl bg-primary text-primary-foreground shadow-sm transition-transform group-hover:scale-[1.03]">
+                  <Plus className="size-6" strokeWidth={2.4} />
                 </span>
-                <span className="text-[15px] font-medium">New contract</span>
+                <span className="text-[16px] font-semibold">New contract</span>
               </button>
             </div>
 
