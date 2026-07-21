@@ -706,35 +706,45 @@ function MerlinInsightsView({ onBack, onOpen }: {
           <ArrowLeft className="size-3.5" /> Back to workspace
         </button>
 
-        <section className="overflow-hidden rounded-3xl border border-merlin-border bg-gradient-to-br from-merlin-soft/70 via-card to-card">
-          <div className="grid gap-6 p-6 lg:grid-cols-[1.35fr_0.65fr] lg:p-7">
+        <section className="rounded-3xl border border-border/60 bg-card p-6 shadow-xs lg:p-7">
+          <div className="grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
             <div>
-              <div className="flex items-center gap-3">
-                <MerlinMark size={42} />
-                <div>
-                  <div className="font-mono text-[12px] font-semibold uppercase tracking-[0.22em] text-merlin">Merlin command centre</div>
-                  <h1 className="mt-1 text-2xl font-semibold tracking-[-0.03em] sm:text-3xl">AI controls by contract status</h1>
-                </div>
+              <div className="flex items-center gap-2">
+                <h1 className="text-[24px] font-semibold leading-none tracking-[-0.025em] text-foreground sm:text-[28px]">Merlin command centre</h1>
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-merlin-soft px-2 py-0.5 text-[11px] font-semibold text-merlin">
+                  <span className="size-1.5 animate-pulse rounded-full bg-merlin" /> Live
+                </span>
               </div>
-              <p className="mt-4 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                Merlin groups every contract by where it is stuck, then suggests the next best action: fix draft risks, route review, chase approvals, or reuse signed agreements as clean references.
+              <p className="mt-2.5 max-w-2xl text-[14px] leading-relaxed text-muted-foreground">
+                Merlin groups every contract by where it's stuck, then suggests the next best action — fix draft risks, route review, chase approvals, or reuse signed agreements as clean references.
               </p>
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {MERLIN_HOME_UPDATES.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
-                    className="rounded-2xl border border-border/70 bg-background/70 p-3 text-left transition-all hover:-translate-y-0.5 hover:border-merlin-border hover:bg-card"
-                  >
-                    <div className="text-xl font-semibold tabular-nums">{item.progress}%</div>
-                    <div className="mt-1 text-[11px] font-medium text-muted-foreground">{item.subtitle}</div>
-                    <div className="mt-2 line-clamp-2 text-[13px] font-medium leading-snug">{item.title}</div>
-                  </button>
-                ))}
+                {MERLIN_HOME_UPDATES.map((item) => {
+                  const toneColor =
+                    item.tone === "high" ? "var(--risk-high)" : item.tone === "merlin" ? "var(--merlin)" : item.tone === "success" ? "var(--risk-low)" : "var(--primary)";
+                  const ring = `conic-gradient(${toneColor} ${item.progress * 3.6}deg, color-mix(in oklch, var(--muted-foreground) 22%, transparent) 0deg)`;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => onOpen({ title: item.onSelectTitle, status: item.onSelectStatus })}
+                      className="group rounded-2xl border border-border/60 bg-muted/40 p-4 text-left transition-all duration-200 hover:-translate-y-0.5 hover:border-border hover:bg-card hover:shadow-md"
+                    >
+                      <span className="inline-flex items-center gap-2">
+                        <span
+                          className="size-[18px] shrink-0 rounded-full"
+                          style={{ background: ring, WebkitMask: "radial-gradient(farthest-side, transparent 55%, #000 57%)", mask: "radial-gradient(farthest-side, transparent 55%, #000 57%)" }}
+                        />
+                        <span className="text-[15px] font-semibold tabular-nums text-foreground">{item.progress}%</span>
+                      </span>
+                      <div className="mt-2.5 line-clamp-2 text-[14px] font-medium leading-snug text-foreground">{item.title}</div>
+                      <div className="mt-1 text-[12px] text-muted-foreground">{item.subtitle}</div>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+            <div className="rounded-2xl border border-border/60 bg-muted/40 p-4">
               <div className="flex items-center gap-2">
                 <WandSparkles className="size-4 text-merlin" />
                 <div className="text-sm font-semibold">Recommended controls</div>
@@ -746,8 +756,8 @@ function MerlinInsightsView({ onBack, onOpen }: {
                   "Nudge pending approvers with context",
                   "Use signed agreements as fallback references",
                 ].map((control) => (
-                  <div key={control} className="flex items-start gap-2 rounded-xl bg-accent/50 px-3 py-2 text-[13px]">
-                    <Check className="mt-0.5 size-3.5 text-success" />
+                  <div key={control} className="flex items-start gap-2 rounded-xl bg-card px-3 py-2 text-[13px]">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-success" />
                     <span>{control}</span>
                   </div>
                 ))}
