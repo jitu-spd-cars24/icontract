@@ -419,7 +419,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
 
           {/* prompt card — the focal surface */}
           <div className="mx-auto mt-9 max-w-4xl">
-            <div className="group rounded-[24px] border border-border/80 bg-card/95 p-3 shadow-[0_24px_70px_rgba(15,15,20,0.12)] transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)]">
+            <div className="group rounded-[24px] border border-border/60 bg-card/70 p-3 shadow-[0_24px_70px_rgba(15,15,20,0.12)] backdrop-blur-2xl transition-shadow focus-within:border-merlin-border focus-within:shadow-[0_0_0_4px_color-mix(in_oklch,var(--merlin)_13%,transparent)] supports-[backdrop-filter]:bg-card/60">
               <div className="flex items-start gap-3 px-2 pt-2">
                 <Sparkles className="mt-1 size-4 shrink-0 text-merlin" />
                 <textarea
