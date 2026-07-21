@@ -409,7 +409,7 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
             <React.Suspense fallback={<div style={{ width: 190, height: 190 }} />}>
               <PlasmaSphere size={190} />
             </React.Suspense>
-            <h1 className="mt-9 text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-balance sm:text-[42px]">
+            <h1 className="-mt-3 text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-balance sm:text-[42px]">
               Good afternoon, Jitendra
               <br />
               What would you like to{" "}
