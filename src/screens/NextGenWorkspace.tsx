@@ -99,6 +99,12 @@ export function NextGenWorkspace() {
     () => Object.fromEntries(PROJECTS.map((p) => [p.id, p.pinned]))
   );
   const [activeId, setActiveId] = React.useState<string | null>(null);
+
+  // Once the contract is routed, reflect it across the whole window.
+  React.useEffect(() => {
+    if (submitted && sessionStatus === "Draft") setSessionStatus("In Approval");
+  }, [submitted, sessionStatus]);
+
   const normalizedSidebarQuery = sidebarQuery.trim().toLowerCase();
   const visibleProjects = normalizedSidebarQuery
     ? PROJECTS.map((project) => {

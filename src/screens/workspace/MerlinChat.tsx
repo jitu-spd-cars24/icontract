@@ -3,8 +3,8 @@ import { Button } from "@/components/ui/primitives";
 import { MerlinMark, ConfidenceMeter } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
-import { CONTRACT, INSIGHTS, STANDARD_FIX } from "@/lib/data";
-import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, ShieldCheck, FilePlus2, GitCompare, Minus, Plus, LayoutTemplate, ChevronDown } from "lucide-react";
+import { CONTRACT, INSIGHTS, STANDARD_FIX, APPROVERS } from "@/lib/data";
+import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, ShieldCheck, FilePlus2, GitCompare, Minus, Plus, LayoutTemplate, ChevronDown, ArrowRight, Clock } from "lucide-react";
 
 interface Card {
   kind: "risk" | "missing";
@@ -32,7 +32,7 @@ interface Msg {
   cards?: Card[];
   files?: Attachment[];
   diff?: Diff;
-  confirm?: "approval";
+  confirm?: "approval" | "sent";
   streaming?: boolean;
 }
 
@@ -114,7 +114,7 @@ export function MerlinChat({
   sessionStatus?: "Draft" | "In Review" | "In Approval" | "Signed";
   onOpenApproval: () => void;
 }) {
-  const { isBlank, intakeMode, insights, clauses, resolveInsight, insertMissingClause, updateField, generateFromIntake } = useStore();
+  const { isBlank, intakeMode, insights, clauses, resolveInsight, insertMissingClause, updateField, generateFromIntake, submitted } = useStore();
   const health = useHealth();
 
   const [messages, setMessages] = React.useState<Msg[]>([]);
@@ -126,6 +126,7 @@ export function MerlinChat({
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
   const askedApprovalRef = React.useRef(false);
+  const sentNotifiedRef = React.useRef(false);
 
   function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -159,6 +160,9 @@ export function MerlinChat({
   React.useEffect(() => {
     setStep(0);
     askedApprovalRef.current = false;
+    // Baseline to current submit state so opening an already-routed contract
+    // doesn't replay the "sent" message.
+    sentNotifiedRef.current = submitted;
     if (intakeMode) {
       setPhase("intake");
       setMessages([
@@ -222,9 +226,24 @@ export function MerlinChat({
     // eslint-disable-next-line
   }, [health.openRisks, health.openMissing, phase, sessionStatus]);
 
+  // When the contract is actually routed, confirm it in the chat and surface
+  // the approval chain so you can see (and review) who's approving.
+  React.useEffect(() => {
+    if (submitted && !sentNotifiedRef.current) {
+      sentNotifiedRef.current = true;
+      merlinReply(
+        `Sent for approval. I've routed it through the ${APPROVERS.length}-person chain — here's who's reviewing and where each stands. I'll track sign-off and nudge anyone who stalls.`,
+        undefined,
+        undefined,
+        "sent"
+      );
+    }
+    // eslint-disable-next-line
+  }, [submitted]);
+
   const push = (m: Msg) => setMessages((prev) => [...prev, m]);
   // Streamed reply — brief "thinking", then reveal word-by-word; cards/diff land after
-  function merlinReply(text: string, cards?: Card[], diff?: Diff, confirm?: "approval") {
+  function merlinReply(text: string, cards?: Card[], diff?: Diff, confirm?: "approval" | "sent") {
     setTyping(true);
     const id = uid();
     window.setTimeout(() => {
@@ -484,6 +503,53 @@ export function MerlinChat({
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => dismissApproval(m.id)}>
                           Not yet
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {m.confirm === "sent" && (
+                    <div className="mt-3 animate-in-up overflow-hidden rounded-2xl border border-border/60 bg-card shadow-xs">
+                      <div className="flex items-center justify-between gap-3 border-b border-border/60 px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-risk-low-soft text-success">
+                            <ShieldCheck className="size-4" />
+                          </span>
+                          <div>
+                            <div className="text-[13px] font-semibold">Sent for approval</div>
+                            <div className="text-[11px] text-muted-foreground">Routed to {APPROVERS.length} approvers</div>
+                          </div>
+                        </div>
+                        <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-risk-low-soft px-2 py-1 text-[11px] font-medium text-success">
+                          <Check className="size-3" /> Routed
+                        </span>
+                      </div>
+                      <div className="divide-y divide-border/60">
+                        {APPROVERS.map((a) => {
+                          const tone =
+                            a.status === "ready"
+                              ? { label: "Ready", cls: "bg-risk-low-soft text-success" }
+                              : a.status === "pending"
+                              ? { label: "Pending", cls: "bg-risk-med-soft text-risk-med" }
+                              : { label: "On leave", cls: "bg-muted text-muted-foreground" };
+                          const initials = a.name.split(" ").map((n) => n[0]).slice(0, 2).join("").toUpperCase();
+                          return (
+                            <div key={a.id} className="flex items-center gap-3 px-4 py-2.5">
+                              <span className="grid size-8 shrink-0 place-items-center rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">{initials}</span>
+                              <div className="min-w-0 flex-1">
+                                <div className="truncate text-[13px] font-medium">{a.name}</div>
+                                <div className="truncate text-[11px] text-muted-foreground">Stage {a.stage} · {a.role}</div>
+                              </div>
+                              <span className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${tone.cls}`}>{tone.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div className="flex items-center justify-between gap-3 px-4 py-2.5">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <Clock className="size-3.5" /> Merlin is tracking sign-off
+                        </span>
+                        <Button size="sm" variant="outline" className="h-8 rounded-full" onClick={onOpenApproval}>
+                          Review route <ArrowRight className="size-3.5" />
                         </Button>
                       </div>
                     </div>
