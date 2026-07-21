@@ -12,6 +12,7 @@ import { ArtifactPanel } from "./workspace/ArtifactPanel";
 import { ApprovalModal } from "./workspace/ApprovalModal";
 import { ContractPreview } from "./workspace/ContractPreview";
 import { ClauseDetail } from "./workspace/ClauseDetail";
+import { CommandWidgets } from "./workspace/CommandWidgets";
 import { RECENT_CONTRACTS, PROJECTS } from "@/lib/data";
 import {
   Plus, Search, Send, Sparkles, PanelRightClose, PanelRightOpen, Moon, Sun,
@@ -768,6 +769,8 @@ function MerlinInsightsView({ onBack, onOpen }: {
             </div>
           </div>
         </section>
+
+        <CommandWidgets />
 
         <section className="mt-6">
           <div className="mb-3 flex items-center justify-between gap-3">
