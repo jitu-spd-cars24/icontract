@@ -1,7 +1,9 @@
 import * as React from "react";
 import { Button, Badge, Avatar, Tooltip } from "@/components/ui/primitives";
 import { Logo, MerlinMark, MerlinOrb, SectionLabel } from "@/components/shared";
-import { SphereAnimation } from "@/components/SphereAnimation";
+const PlasmaSphere = React.lazy(() =>
+  import("@/components/PlasmaSphere").then((m) => ({ default: m.PlasmaSphere }))
+);
 import { AmbientBackground } from "@/components/AmbientBackground";
 import { useStore } from "@/store";
 import { useHealth } from "./workspace/LeftRail";
@@ -165,17 +167,15 @@ export function NextGenWorkspace() {
           </button>
         ) : (
           <>
-            <div className="relative flex h-[76px] items-center px-5">
-              <button onClick={() => setView("home")} className="min-w-0 pr-10" aria-label="Home"><Logo /></button>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                <button
-                  onClick={() => setLeftCollapsed(true)}
-                  className="grid size-8 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                  aria-label="Collapse sidebar"
-                >
-                  <PanelLeftClose className="size-4" />
-                </button>
-              </div>
+            <div className="flex h-[72px] items-center gap-2 px-4">
+              <button onClick={() => setView("home")} className="min-w-0" aria-label="Home"><Logo /></button>
+              <button
+                onClick={() => setLeftCollapsed(true)}
+                className="ml-auto grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                aria-label="Collapse sidebar"
+              >
+                <PanelLeftClose className="size-4" />
+              </button>
             </div>
             {/* New contract — prominent launcher */}
             <div className="px-4 pt-1">
@@ -406,7 +406,9 @@ function HomeView({ input, setInput, onSubmit, onNew, onOpen, onViewInsights, on
       <div className="relative">
         <div className="mx-auto max-w-3xl px-6 pb-2 pt-16 sm:pt-24">
           <div className="flex flex-col items-center text-center animate-in-up">
-            <SphereAnimation size={148} />
+            <React.Suspense fallback={<div style={{ width: 190, height: 190 }} />}>
+              <PlasmaSphere size={190} />
+            </React.Suspense>
             <h1 className="mt-9 text-[32px] font-semibold leading-[1.12] tracking-[-0.025em] text-balance sm:text-[42px]">
               Good afternoon, Jitendra
               <br />
