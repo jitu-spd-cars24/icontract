@@ -4,7 +4,7 @@ import { MerlinMark, ConfidenceMeter } from "@/components/shared";
 import { useStore } from "@/store";
 import { useHealth } from "./LeftRail";
 import { CONTRACT, INSIGHTS, STANDARD_FIX } from "@/lib/data";
-import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, FilePlus2, GitCompare, Minus, Plus, LayoutTemplate, ChevronDown } from "lucide-react";
+import { Send, Sparkles, Check, Paperclip, FileText, Image as ImageIcon, X, ShieldAlert, ShieldCheck, FilePlus2, GitCompare, Minus, Plus, LayoutTemplate, ChevronDown } from "lucide-react";
 
 interface Card {
   kind: "risk" | "missing";
@@ -32,6 +32,7 @@ interface Msg {
   cards?: Card[];
   files?: Attachment[];
   diff?: Diff;
+  confirm?: "approval";
   streaming?: boolean;
 }
 
@@ -124,6 +125,7 @@ export function MerlinChat({
   const [attachments, setAttachments] = React.useState<Attachment[]>([]);
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const fileRef = React.useRef<HTMLInputElement>(null);
+  const askedApprovalRef = React.useRef(false);
 
   function onPickFiles(e: React.ChangeEvent<HTMLInputElement>) {
     const files = Array.from(e.target.files ?? []);
@@ -156,6 +158,7 @@ export function MerlinChat({
   // (Re)initialise the conversation when a new session starts
   React.useEffect(() => {
     setStep(0);
+    askedApprovalRef.current = false;
     if (intakeMode) {
       setPhase("intake");
       setMessages([
@@ -197,9 +200,31 @@ export function MerlinChat({
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" });
   }, [messages, typing]);
 
+  // Once every step is done and the draft is approval-ready, Merlin proactively
+  // asks for confirmation to send it for approval — right inside the chat.
+  React.useEffect(() => {
+    if (
+      phase === "authoring" &&
+      sessionStatus === "Draft" &&
+      !health.empty &&
+      health.openRisks === 0 &&
+      health.openMissing === 0 &&
+      !askedApprovalRef.current
+    ) {
+      askedApprovalRef.current = true;
+      merlinReply(
+        `That's every open risk and missing clause handled — the draft is at ${health.score}/100. Do you want me to send it for approval?`,
+        undefined,
+        undefined,
+        "approval"
+      );
+    }
+    // eslint-disable-next-line
+  }, [health.openRisks, health.openMissing, phase, sessionStatus]);
+
   const push = (m: Msg) => setMessages((prev) => [...prev, m]);
   // Streamed reply — brief "thinking", then reveal word-by-word; cards/diff land after
-  function merlinReply(text: string, cards?: Card[], diff?: Diff) {
+  function merlinReply(text: string, cards?: Card[], diff?: Diff, confirm?: "approval") {
     setTyping(true);
     const id = uid();
     window.setTimeout(() => {
@@ -213,7 +238,7 @@ export function MerlinChat({
         setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, text: partial } : m)));
         if (i >= words.length) {
           window.clearInterval(iv);
-          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, streaming: false, cards, diff } : m)));
+          setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, streaming: false, cards, diff, confirm } : m)));
         }
       }, 20);
     }, 360);
@@ -240,6 +265,15 @@ export function MerlinChat({
       merlinReply(`Added “${card.title}” — drafted from the standard and flagged for your review. Nothing's final until you approve.`);
     }
     setMessages((prev) => prev.map((m) => (m.cards ? { ...m, cards: m.cards.map((c) => (c.refId === card.refId ? { ...c, done: true } : c)) } : m)));
+  }
+
+  function confirmApproval(id: string) {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, confirm: undefined } : m)));
+    onOpenApproval();
+  }
+  function dismissApproval(id: string) {
+    setMessages((prev) => prev.map((m) => (m.id === id ? { ...m, confirm: undefined } : m)));
+    merlinReply("No rush — the draft stays approval-ready. Just say the word when you want me to route it.");
   }
 
   function handleIntakeAnswer(text: string) {
@@ -433,6 +467,24 @@ export function MerlinChat({
                       <div className="flex items-center justify-between gap-3 px-4 py-2.5 text-[11px] text-muted-foreground">
                         <span>Version history updated</span>
                         <button className="font-medium text-primary hover:underline">Revert</button>
+                      </div>
+                    </div>
+                  )}
+                  {m.confirm === "approval" && (
+                    <div className="mt-3 animate-in-up rounded-2xl border border-merlin-border/70 bg-merlin-soft/40 p-4">
+                      <div className="flex items-center gap-2 text-[13px] font-semibold text-foreground">
+                        <ShieldCheck className="size-4 text-success" /> Ready to send for approval
+                      </div>
+                      <p className="mt-1 text-[13px] leading-relaxed text-muted-foreground">
+                        I'll route this to the approval chain — finance and legal — and track sign-off for you.
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        <Button size="sm" onClick={() => confirmApproval(m.id)}>
+                          <ShieldCheck className="size-3.5" /> Send for approval
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => dismissApproval(m.id)}>
+                          Not yet
+                        </Button>
                       </div>
                     </div>
                   )}
